@@ -52,3 +52,15 @@ class CareNoteResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+# AUTH SCHEMAS
+class UserRegister(BaseModel):
+    email: str
+    password: str
+    first_name: str
+    last_name: str
+    agency_name: str
+    
+class UserLogin(BaseModel):
+    email: str
+    password: str
