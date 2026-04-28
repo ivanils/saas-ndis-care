@@ -72,7 +72,7 @@ ALTER TABLE participants ENABLE ROW LEVEL SECURITY;
 
 -- Reading policy (SELECT): 
 -- You can only see participants if your JWT has the same agency_id and the record is not deleted.
-CREATE POLICY "Tenants can view their own active participants"
+CREATE POLICY "Tenants can only view their own active participants"
 ON participants FOR SELECT
 USING (
     agency_id = (auth.jwt() -> 'app_metadata' ->> 'agency_id')::uuid
@@ -81,7 +81,7 @@ USING (
 
 -- Writing policy (INSERT):
 -- You can only insert if you assign your own agency_id to the record. This ensures that workers can only create participants for their own agency.
-CREATE POLICY "Tenants can insert participants for their agency"
+CREATE POLICY "Tenants can only insert participants for their agency"
 ON participants FOR INSERT
 WITH CHECK (
     agency_id = (auth.jwt() -> 'app_metadata' ->> 'agency_id')::uuid
