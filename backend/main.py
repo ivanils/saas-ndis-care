@@ -1,11 +1,13 @@
 # backend/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+
+# Import our database and security tools
 from database import supabase
+from dependencies import get_current_user, CurrentUser
 
 app = FastAPI(title="NDIS Care SaaS API", version="1.0.0")
 
-# Configure CORS to allow communication with the Next.js frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"], 
@@ -16,11 +18,15 @@ app.add_middleware(
 
 @app.get("/health")
 def health_check():
+    return {"status": "online", "message": "FastAPI is running successfully"}
+
+# --- NEW SECURE TEST ENDPOINT ---
+@app.get("/secure-test")
+def secure_test_endpoint(current_user: CurrentUser = Depends(get_current_user)):
     """
-    Basic health check endpoint to verify server status.
+    This endpoint is protected. You can only enter if you have a valid badge (CurrentUser).
     """
     return {
-        "status": "online",
-        "message": "FastAPI is running successfully",
-        "supabase_connection": "configured"
+        "message": "Welcome to the VIP area!",
+        "your_badge": current_user
     }
