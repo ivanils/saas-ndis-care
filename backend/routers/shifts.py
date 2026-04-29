@@ -44,6 +44,7 @@ def create_shift(shift: schemas.ShiftCreate, badge = Depends(get_current_user)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
 @router.get("/", response_model=List[schemas.ShiftResponse])
 def get_shifts(badge = Depends(get_current_user)):
     """
@@ -73,3 +74,40 @@ def get_shifts(badge = Depends(get_current_user)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to fetch shifts: {str(e)}"
         )
+
+@router.patch("/{shift_id}", response_model=schemas.ShiftResponse)
+def update_shift(shift_id: str, shift_data: schemas.ShiftUpdate, badge = Depends(get_current_user)):
+    """
+    Updates an existing shift.
+    Admins can update any shift in their agency.
+    Workers can only update their own shifts.
+    """
+    try:
+        from database import supabase_admin
+        #1. Clean the incoming data, removing any None values (only update provided fields) so we don't overwrite existing data with nulls
+        update_dict = {k: v for k, v in shift_data.model_dump(exclude_unset=True).items() if v is not None}
+        
+        if not update_dict:
+             raise HTTPException(status_code=400, detail="No fields provided for update.")
+        
+        #2. Build the secure query
+        query = supabase_admin.table("shifts").update(update_dict).eq("id", shift_id).eq("agency_id", str(badge.agency_id))
+        
+        #3. Add worker restriction for non-admins
+        if badge.role == "worker":
+            query = query.eq("worker_id", str(badge.id))
+            
+        #4. Execute the query
+        response = query.execute()
+        
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Shift not found or you don't have permission to update it.")
+        
+        return response.data[0] # Return the updated shift
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to update shift: {str(e)}"
+        )
+    

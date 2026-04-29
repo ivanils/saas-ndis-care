@@ -22,6 +22,12 @@ class ShiftCreate(BaseModel):
     start_time: datetime
     end_time: Optional[datetime] = None
 
+# Schema for updating a shift (PATCH)
+class ShiftUpdate(BaseModel):
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    status: Optional[ShiftStatus] = None
+
 # Schema for sending data back to Next.js (Read)
 class ShiftResponse(BaseModel):
     id: UUID4
