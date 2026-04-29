@@ -38,7 +38,7 @@ def create_shift(shift: schemas.ShiftCreate, badge = Depends(get_current_user)):
         return {"message": "Shift created successfully!", "shift_id": response.data[0]}
     
     except Exception as e:
-        print(f"[ERROR] Failed to create shift: {e}")
+        # print(f"[ERROR] Failed to create shift: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)

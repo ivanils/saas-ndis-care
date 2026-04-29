@@ -24,8 +24,8 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     token = credentials.credentials
     
     # --- DEBUG PRINT 1: The Token ---
-    print(f"\n{'='*50}")
-    print(f"[DEBUG 1] Raw Token received: {token[:15]}... (truncated for security)")
+    # print(f"\n{'='*50}")
+    # print(f"[DEBUG 1] Raw Token received: {token[:15]}...")
     
     try:
         # 1. Ask Supabase to verify the token and return the user profile
@@ -45,7 +45,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         app_metadata = user.app_metadata
         
         # --- DEBUG PRINT 3: The Secret Backpack (app_metadata) ---
-        print(f"[DEBUG 3] Full app_metadata dictionary: {app_metadata}")
+        # print(f"[DEBUG 3] Full app_metadata dictionary: {app_metadata}")
         
         agency_id = app_metadata.get("agency_id")
         role = app_metadata.get("role", "worker") # Default to 'worker' if missing
@@ -61,8 +61,8 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         # 4. Return the clean, validated context
         
         # --- DEBUG PRINT 4: The Final Badge ---
-        print(f"[DEBUG 4] Access Granted! Badge -> Agency: {agency_id} | Role: {role}")
-        print(f"{'='*50}\n")
+        # print(f"[DEBUG 4] Access Granted! Badge -> Agency: {agency_id} | Role: {role}")
+        # print(f"{'='*50}\n")
         
         return CurrentUser(
             id=user.id,
@@ -73,7 +73,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     except Exception as e:
         # Catch expired tokens or tampered signatures
         
-        print(f"\n[DEBUG ERROR] Authentication failed: {str(e)}\n")
+        # print(f"\n[DEBUG ERROR] Authentication failed: {str(e)}\n")
         
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

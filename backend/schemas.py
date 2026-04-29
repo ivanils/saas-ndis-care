@@ -17,7 +17,7 @@ class ShiftStatus(str, Enum):
 # --- SHIFTS SCHEMAS ---
 # Schema for receiving data from Next.js (Create)
 class ShiftCreate(BaseModel):
-    worker_id: Optional[str] = None # Optional because workers can't choose their worker_id, it will be forced in the backend
+    worker_id: Optional[str] = None # Optional, workers can't choose their worker_id.
     participant_id: UUID4
     start_time: datetime
     end_time: Optional[datetime] = None
@@ -34,7 +34,7 @@ class ShiftResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        from_attributes = True # Allows Pydantic to read ORM/Database objects
+        from_attributes = True # Allows Pydantic to read ORM/Database objects important!
 
 # --- CARE NOTES SCHEMAS ---
 class CareNoteCreate(BaseModel):
