@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from database import supabase_admin
 import schemas
 from dependencies import get_current_user
+from typing import List
 
 router = APIRouter(
     prefix="/shifts",
@@ -42,4 +43,33 @@ def create_shift(shift: schemas.ShiftCreate, badge = Depends(get_current_user)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
+        )
+@router.get("/", response_model=List[schemas.ShiftResponse])
+def get_shifts(badge = Depends(get_current_user)):
+    """
+    Retrieves a list of shifts.
+    - Admins see all shifts for their agency.
+    - Workers see only their assigned shifts.
+    """
+    try:
+        # 1. Start the query using our admin client, filtering by the user's agency immediately
+        # use of supabase_admin because we are orchestrating the security layer here in Python
+        from database import supabase_admin
+        query = supabase_admin.table("shifts").select("*").eq("agency_id", str(badge.agency_id))
+        
+        #2. Add extra filters based on the user's role
+        #Admins don't need extra filters, they see everything in their agency
+        if badge.role == "worker":
+            query = query.eq("worker_id", str(badge.id))
+        
+        #3. Execute the query and return results
+        response = query.execute()
+        
+        # FastAPI and Pydantic will automatically format this list into our ShiftResponse schema
+        return response.data
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to fetch shifts: {str(e)}"
         )
