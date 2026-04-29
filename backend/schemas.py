@@ -17,7 +17,7 @@ class ShiftStatus(str, Enum):
 # --- SHIFTS SCHEMAS ---
 # Schema for receiving data from Next.js (Create)
 class ShiftCreate(BaseModel):
-    worker_id: Optional[str] = None # Optional, workers can't choose their worker_id.
+    worker_id: Optional[UUID4] = None # Optional, workers can't choose their worker_id.
     participant_id: UUID4
     start_time: datetime
     end_time: Optional[datetime] = None

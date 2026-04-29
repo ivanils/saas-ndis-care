@@ -1,6 +1,6 @@
 #backend/routers/shifts.py
 from fastapi import APIRouter, Depends, HTTPException, status
-from database import supabase
+from database import supabase_admin
 import schemas
 from dependencies import get_current_user
 
@@ -33,7 +33,7 @@ def create_shift(shift: schemas.ShiftCreate, badge = Depends(get_current_user)):
                     detail="Admin users must specify a worker_id for the shift.",
                 )
         # 2. Insert the new shift into the database
-        response = supabase.table("shifts").insert(shift_data).execute()
+        response = supabase_admin.table("shifts").insert(shift_data).execute()
         
         return {"message": "Shift created successfully!", "shift_id": response.data[0]}
     

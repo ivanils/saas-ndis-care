@@ -11,7 +11,7 @@ def register_agency_and_admin(user_data: schemas.UserRegister):
     """Registers a new Agency and its first Admin user."""
     try:
         # 1. Creating the new agency in the ddbb
-        agency_response = supabase.table("agencies").insert({"name": user_data.agency_name}).execute()
+        agency_response = supabase_admin.table("agencies").insert({"name": user_data.agency_name}).execute()
         new_agency = agency_response.data[0]  # Get the newly created agency record
         agency_id = new_agency["id"]
         
@@ -27,7 +27,6 @@ def register_agency_and_admin(user_data: schemas.UserRegister):
                 }
             }
         })
-        
         user_id = auth_response.user.id
         supabase_admin.auth.admin.update_user_by_id(
             user_id,
@@ -35,7 +34,7 @@ def register_agency_and_admin(user_data: schemas.UserRegister):
         )
         
         #3. Create the user's profile in public.profiles table
-        supabase.table("profiles").upsert({
+        supabase_admin.table("profiles").upsert({
             "id": user_id,
             "agency_id": agency_id,
             "role": "admin",
