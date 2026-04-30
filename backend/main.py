@@ -1,7 +1,7 @@
 # backend/main.py
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, shifts, care_notes
+from routers import auth, shifts, care_notes, participants
 
 # Import our database and security tools
 from database import supabase
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(shifts.router)
 app.include_router(care_notes.router)
+app.include_router(participants.router)
 
 @app.get("/health")
 def health_check():
