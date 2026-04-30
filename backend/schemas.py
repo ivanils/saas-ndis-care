@@ -68,7 +68,24 @@ class UserRegister(BaseModel):
     last_name: str
     agency_name: str
     
-# PARTICIPANY SCHEMAS
+# PROFILES SCHEMAS
+class ProfileResponse(BaseModel):
+    id: UUID4
+    agency_id: UUID4
+    role: str
+    first_name: str
+    last_name: str
+
+    class Config:
+        from_attributes = True
+
+class ProfileUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    role: Optional[str] = None
+
+
+# PARTICIPANT SCHEMAS
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -99,3 +116,4 @@ class ParticipantUpdate(BaseModel):
     ndis_id: Optional[str] = None
     emergency_contact: Optional[str] = None
     medical_alerts: Optional[str] = None
+    
