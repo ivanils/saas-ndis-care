@@ -1,7 +1,7 @@
 # backend/schemas.py
 from pydantic import BaseModel, UUID4
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 
 # --- ENUMS (Mirroring Database Enums) ---
@@ -10,23 +10,34 @@ class UserRole(str, Enum):
     worker = 'worker'
 
 class ShiftStatus(str, Enum):
-    pending_approval = 'pending_approval'
-    approved = 'approved'
-    disputed = 'disputed'
+    assigned = "assigned"               # Grey/blue - Assigned but not started
+    in_progress = "in_progress"         # Yellow - worker clocked in but not clocked out yet
+    completed = "completed"             # Orange - worker clocked out
+    pending_approval = "pending_approval" # Orange - Waiting for Admin review
+    approved = "approved"               # Green - Ready for invoicing
+    disputed = "disputed"               # Red - There is an issue with the hours
+    cancelled = "cancelled"             # Dark Gray - Shift cancelled
 
 # --- SHIFTS SCHEMAS ---
 # Schema for receiving data from Next.js (Create)
+
 class ShiftCreate(BaseModel):
     worker_id: Optional[UUID4] = None # Optional, workers can't choose their worker_id.
     participant_id: UUID4
     start_time: datetime
     end_time: Optional[datetime] = None
+    status: ShiftStatus = ShiftStatus.assigned
 
 # Schema for updating a shift (PATCH)
 class ShiftUpdate(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     status: Optional[ShiftStatus] = None
+    # location data for clock-in and clock-out (optional, but can be used for auditing and compliance)
+    clock_in_lat: Optional[float] = None
+    clock_in_lng: Optional[float] = None
+    clock_out_lat: Optional[float] = None
+    clock_out_lng: Optional[float] = None
 
 # Schema for sending data back to Next.js (Read)
 class ShiftResponse(BaseModel):
@@ -37,6 +48,10 @@ class ShiftResponse(BaseModel):
     start_time: datetime
     end_time: Optional[datetime]
     status: ShiftStatus
+    clock_in_lat: Optional[float] = None
+    clock_in_lng: Optional[float] = None
+    clock_out_lat: Optional[float] = None
+    clock_out_lng: Optional[float] = None
     created_at: datetime
 
     class Config:
@@ -47,6 +62,8 @@ class CareNoteCreate(BaseModel):
     participant_id: UUID4
     shift_id: Optional[UUID4] = None
     content: str
+    media_urls: Optional[List[str]] = [] # Supabase storage URLs for any photos or files attached to the note
+    signature_url: Optional[str] = None  #Patient or worker signature URL (if required for compliance)
 
 class CareNoteResponse(BaseModel):
     id: UUID4
@@ -55,6 +72,8 @@ class CareNoteResponse(BaseModel):
     participant_id: UUID4
     shift_id: Optional[UUID4]
     content: str
+    media_urls: Optional[List[str]]
+    signature_url: Optional[str]
     created_at: datetime
 
     class Config:
@@ -67,6 +86,10 @@ class UserRegister(BaseModel):
     first_name: str
     last_name: str
     agency_name: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
     
 # PROFILES SCHEMAS
 class ProfileResponse(BaseModel):
@@ -75,6 +98,7 @@ class ProfileResponse(BaseModel):
     role: str
     first_name: str
     last_name: str
+    avatar_url: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -83,12 +107,10 @@ class ProfileUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     role: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 
 # PARTICIPANT SCHEMAS
-class UserLogin(BaseModel):
-    email: str
-    password: str
     
 class ParticipantCreate(BaseModel):
     first_name: str
@@ -96,6 +118,7 @@ class ParticipantCreate(BaseModel):
     ndis_id: Optional[str] = None
     emergency_contact:str
     medical_alerts: Optional[str] = None
+    avatar_url: Optional[str] = None
     
 class ParticipantResponse(BaseModel):
     id: UUID4
@@ -105,6 +128,7 @@ class ParticipantResponse(BaseModel):
     ndis_id: Optional[str]
     emergency_contact: str
     medical_alerts: Optional[str]
+    avatar_url: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -116,4 +140,5 @@ class ParticipantUpdate(BaseModel):
     ndis_id: Optional[str] = None
     emergency_contact: Optional[str] = None
     medical_alerts: Optional[str] = None
+    avatar_url: Optional[str] = None
     

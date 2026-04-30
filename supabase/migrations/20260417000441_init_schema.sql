@@ -11,7 +11,7 @@ CREATE TABLE agencies (
     deleted_at TIMESTAMPTZ
 );
 
--- 2. Profiles (Extiende auth.users de Supabase)
+-- 2. Profiles (Extends auth.users from Supabase)
 CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     agency_id UUID NOT NULL REFERENCES agencies(id),
@@ -54,7 +54,7 @@ CREATE TABLE care_notes (
     agency_id UUID NOT NULL REFERENCES agencies(id),
     worker_id UUID NOT NULL REFERENCES profiles(id),
     participant_id UUID NOT NULL REFERENCES participants(id),
-    shift_id UUID REFERENCES shifts(id), -- Nullable para notas independientes
+    shift_id UUID REFERENCES shifts(id), -- Nullable for independent notes
     content TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
@@ -86,3 +86,60 @@ ON participants FOR INSERT
 WITH CHECK (
     agency_id = (auth.jwt() -> 'app_metadata' ->> 'agency_id')::uuid
 );
+
+-- Update policy (UPDATE):
+-- 1. TABLE AND COLUMN UPDATES
+
+ALTER TABLE profiles 
+ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+ALTER TABLE participants 
+ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+ALTER TABLE shifts 
+ADD COLUMN IF NOT EXISTS clock_in_lat NUMERIC,
+ADD COLUMN IF NOT EXISTS clock_in_lng NUMERIC,
+ADD COLUMN IF NOT EXISTS clock_out_lat NUMERIC,
+ADD COLUMN IF NOT EXISTS clock_out_lng NUMERIC;
+
+ALTER TABLE care_notes 
+ADD COLUMN IF NOT EXISTS media_urls TEXT[] DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS signature_url TEXT;
+
+-- 2. POLICIES FOR BUCKET: avatars (Public)
+
+CREATE POLICY "Public Access to Avatars"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'avatars' );
+
+CREATE POLICY "Authenticated users can upload avatars"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK ( bucket_id = 'avatars' );
+
+CREATE POLICY "Authenticated users can update avatars"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING ( bucket_id = 'avatars' );
+
+CREATE POLICY "Authenticated users can delete avatars"
+ON storage.objects FOR DELETE
+TO authenticated
+USING ( bucket_id = 'avatars' );
+
+-- 3. POLICIES FOR BUCKET: clinical-vault (Private)
+
+CREATE POLICY "Authenticated users can view clinical files"
+ON storage.objects FOR SELECT
+TO authenticated
+USING ( bucket_id = 'clinical-vault' );
+
+CREATE POLICY "Authenticated users can upload clinical files"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK ( bucket_id = 'clinical-vault' );
+
+CREATE POLICY "Authenticated users can update clinical files"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING ( bucket_id = 'clinical-vault' );
