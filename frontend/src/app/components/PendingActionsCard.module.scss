@@ -1,0 +1,57 @@
+// src/components/PendingActionsCard.module.scss
+
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 20px;
+}
+
+.actionList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+
+  // Remueve la línea inferior del último elemento
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.actionText {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.title {
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+.subtitle {
+  color: var(--text-muted);
+}
+
+.actionBtn {
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  border-radius: 20px; // Forma de pastilla (pill) como en el diseño
+  white-space: nowrap; // Evita que el texto del botón salte de línea
+}

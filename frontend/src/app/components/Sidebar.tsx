@@ -28,8 +28,8 @@ export default function Sidebar() {
     <aside className={styles.sidebarContainer}>
       
       {/* Brand Header */}
-      <div className={styles.brandHeader}>
-        <Image 
+      <div className={styles.brandHeader} onClick={() => router.push('/dashboard')} >
+        <Image
           src="/bellvi_logo.png" 
           alt="Bellvi Logo" 
           width={32} 

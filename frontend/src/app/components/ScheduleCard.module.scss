@@ -58,7 +58,6 @@
   flex-shrink: 0;
 }
 
-// El punto de la línea de tiempo
 .dotColumn {
   width: 14px;
   height: 14px;
@@ -66,10 +65,9 @@
   background-color: var(--border-color);
   flex-shrink: 0;
   z-index: 2;
-  border: 3px solid var(--color-surface); // Borde blanco grueso para "cortar" la línea gris
+  border: 3px solid var(--color-surface);
   box-sizing: content-box;
 
-  // Colores de los puntos (haciendo match con tu globals.scss)
   &.completed { background-color: var(--status-completed-text); }
   &.in-progress { background-color: var(--status-in-progress-bg); border-color: rgba(249, 136, 102, 0.2); }
   &.alert { background-color: var(--status-alert-bg); }

@@ -1,0 +1,106 @@
+// src/components/ActiveShiftCard.module.scss
+
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.profileArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+}
+
+.textData {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.time {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.mapBox {
+  width: 100%;
+  height: 120px;
+  background-color: #F1F5F9;
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  
+  background-image: 
+    linear-gradient(90deg, transparent 48%, rgba(255,255,255,0.8) 48%, rgba(255,255,255,0.8) 52%, transparent 52%),
+    linear-gradient(0deg, transparent 48%, rgba(255,255,255,0.8) 48%, rgba(255,255,255,0.8) 52%, transparent 52%);
+  background-size: 40px 40px;
+}
+
+.mapPin {
+  background-color: #FCA5A5;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.clockOutBtn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.gpsVerification {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.secondaryActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 10px;
+}

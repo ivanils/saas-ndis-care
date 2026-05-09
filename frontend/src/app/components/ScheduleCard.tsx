@@ -49,7 +49,7 @@ export default function ScheduleCard() {
       
       <div className={styles.timeline}>
         {SCHEDULE_DATA.map((item) => {
-          // Format status to match your SCSS classes (e.g., 'In Progress' -> 'in-progress')
+          // Format status to match SCSS classes
           const statusClass = item.status.toLowerCase().replace(' ', '-');
           const isActive = statusClass === 'in-progress';
 
