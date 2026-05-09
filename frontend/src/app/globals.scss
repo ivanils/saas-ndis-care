@@ -22,14 +22,16 @@
   --border-btn-color: #992b13;
   
   // Status Colors
-  --status-completed-bg: #E6F4EA;   // Pastel green
-  --status-completed-text: #1E8E3E;
+  --status-completed-bg: #E0F2FE;   // Light blue
+  --status-completed-text: #0284C7; // Dark blue
+  --status-approved-bg: #E6F4EA;   // Pastel green
+  --status-approved-text: #1E8E3E;
   --status-in-progress-bg: #3f3d35;   // Pastel black (In Progress)
   --status-in-progress-text: #ffffff;
   --status-alert-bg: #ffbb00;     // Pastel orange (Medical Alert)
   --status-alert-text: #4b2e00;
-  --status-assigned-bg: #87c3ff;   // Pastel blue (Assigned)
-  --status-assigned-text: #1e37c4;
+  --status-assigned-bg: #e387ff;   // Pastel blue (Assigned)
+  --status-assigned-text: #8f1ec4;
   --status-cancelled-bg: #f8d7da;  // Pastel red (Cancelled)
   --status-cancelled-text: #842029;
 
@@ -121,9 +123,9 @@ a {
   font-weight: 600;
   text-align: center;
 
-  &.completed {
-    background-color: var(--status-completed-bg);
-    color: var(--status-completed-text);
+  &.approved {
+    background-color: var(--status-approved-bg);
+    color: var(--status-approved-text);
   }
   &.in-progress {
     background-color: var(--status-in-progress-bg);
@@ -140,5 +142,9 @@ a {
   &.cancelled {
     background-color: var(--status-cancelled-bg);
     color: var(--status-cancelled-text);
+  }
+  &.completed {
+    background-color: var(--status-completed-bg);
+    color: var(--status-completed-text);
   }
 }

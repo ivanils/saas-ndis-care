@@ -73,6 +73,7 @@
   &.alert { background-color: var(--status-alert-bg); }
   &.assigned { background-color: var(--status-assigned-text); }
   &.cancelled { background-color: var(--status-cancelled-text); }
+  &.approved { background-color: var(--status-approved-text); }
 }
 
 .contentColumn {
