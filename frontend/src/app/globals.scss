@@ -8,8 +8,10 @@
   
   // Backgrounds and Surfaces
   --color-bg: #FCFAFA;            // Creamy off-white (App background)
-  --color-surface: #FFFFFF;       // White cards
-  
+  --color-surface: #FFFFFF;    
+  --color-background-sidebar-hover: #F98866;   // White cards
+  --color-sidebar-text-hover: #fff6f6;   // Coral text on hover
+
   // Text Colors
   --text-dark: #1E293B;           // Titles (Dark Slate)
   --text-muted: #64748B;          // Secondary text (Medium Gray)
@@ -17,6 +19,7 @@
   
   // Borders and Lines
   --border-color: #F1F5F9;
+  --border-btn-color: #992b13;
   
   // Status Colors
   --status-completed-bg: #E6F4EA;   // Pastel green
@@ -51,6 +54,8 @@ body {
   overflow-x: hidden;
   background-color: var(--color-bg);
   color: var(--text-dark);
+  max-height: 100vh;
+  
 }
 
 a {
@@ -85,8 +90,8 @@ a {
 
 .btn-secondary {
   background-color: transparent;
-  color: var(--text-dark);
-  border: 1px solid var(--border-color);
+  color: var(--border-btn-color);
+  border: 1px solid var(--border-btn-color);
   border-radius: var(--radius-pill);
   padding: 10px 20px;
   font-weight: 500;

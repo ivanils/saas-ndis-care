@@ -55,8 +55,8 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #F8FAFC;
-    color: var(--text-dark);
+    background-color: var(--color-background-sidebar-hover);
+    color: var(--color-sidebar-text-hover);
   }
 
   &.active {
