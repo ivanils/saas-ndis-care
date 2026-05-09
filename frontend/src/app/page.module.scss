@@ -21,11 +21,11 @@
 
 .glowBottomLeft {
   position: absolute;
-  bottom: -35vh;
-  left: -20vw;
-  width: 45vw;
-  height: 45vw;
-  background: radial-gradient(circle, rgba(255, 126, 95, 0.65) 0%, rgba(255, 126, 95, 0) 50%);
+  bottom: -45vh;
+  left: -25vw;
+  width: 65vw;
+  height: 65vw;
+  background: radial-gradient(circle, rgba(255, 126, 95, 0.65) 0%, rgba(255, 126, 95, 0) 60%);
   border-radius: 50%;
 }
 
@@ -100,4 +100,84 @@
 .footerText {
   font-size: 0.8rem;
   color: var(--text-light);
+}
+/* --- LOGIN FORM STYLES --- */
+
+.logoImage {
+  object-fit: contain;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.formContainer .title,
+.formContainer .subtitle {
+  text-align: center;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: #F8FAFC;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+      background-color: var(--color-surface);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.errorBanner {
+  background-color: var(--status-alert-bg);
+  color: var(--status-alert-text);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 16px;
+  cursor: pointer;
+  padding: 8px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--text-dark);
+  }
 }
