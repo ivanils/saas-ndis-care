@@ -1,142 +1,103 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
+.mainContainer {
+  min-height: 100vh;
   display: flex;
-  flex: 1;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  position: relative;
+  overflow: hidden;
+  background-color: #FCFAFA;
 }
 
-.main {
-  display: flex;
-  flex: 1;
+/* --- DECORATIVE BACKGROUND STYLES --- */
+.backgroundLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none; /* Prevents background elements from blocking clicks */
+  z-index: 0;
+}
+
+.glowBottomLeft {
+  position: absolute;
+  bottom: -35vh;
+  left: -20vw;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(circle, rgba(255, 126, 95, 0.65) 0%, rgba(255, 126, 95, 0) 50%);
+  border-radius: 50%;
+}
+
+.glowTopRight {
+  position: absolute;
+  top: -45vh;
+  right: -30vw;
+  width: 80vw;
+  height: 80vw;
+  background: radial-gradient(circle, rgba(238, 204, 138, 0.8) 0%, rgba(238, 204, 138, 0) 70%);
+  filter: blur(80px);
+  border-radius: 50%;
+}
+
+.loginCard {
   width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  max-width: 440px;
+  text-align: center;
+  padding: 48px 40px !important;
+  z-index: 1; /* Keeps the card above the background */
 }
 
-.intro {
+
+
+.logoContainer {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 32px;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
+.logoIcon {
+  font-size: 2.8rem;
+}
+
+.logoText {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  letter-spacing: -0.5px;
+  padding-top: 10px;
+}
+
+.title {
+  font-size: 1.75rem;
   font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+  margin-bottom: 12px;
+  color: var(--text-dark);
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 32px;
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
+.buttonGroup {
   display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
+  flex-direction: column;
   gap: 16px;
-  font-size: 14px;
+  margin-bottom: 24px;
 }
 
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+.fullWidthBtn {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
-}
-
-a.secondary {
-  border-color: var(--button-secondary-border);
-}
-
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
-}
-
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    // filter: invert();
-  }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
+.footerText {
+  font-size: 0.8rem;
+  color: var(--text-light);
 }
