@@ -1,15 +1,16 @@
-ALTER TABLE public.shifts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.participants ENABLE ROW LEVEL SECURITY;
+DO $$
+DECLARE
+    shift_ids UUID[];
+BEGIN
+    SELECT array_agg(id) INTO shift_ids
+    FROM (
+        SELECT id FROM public.shifts 
+        WHERE participant_id = '33333333-3333-3333-3333-333333333333' 
+        AND status = 'completed'
+        LIMIT 3
+    ) AS sub;
 
-DROP POLICY IF EXISTS "Worker can view own shifts" ON public.shifts;
-DROP POLICY IF EXISTS "Authenticated can view participants" ON public.participants;
+    DELETE FROM public.care_notes WHERE shift_id = ANY(shift_ids);
 
-CREATE POLICY "Worker can view own shifts" 
-ON public.shifts FOR SELECT 
-TO authenticated 
-USING (auth.uid() = worker_id);
-
-CREATE POLICY "Authenticated can view participants" 
-ON public.participants FOR SELECT 
-TO authenticated 
-USING (true);
+    DELETE FROM public.shifts WHERE id = ANY(shift_ids);
+END $$;

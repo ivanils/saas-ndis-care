@@ -104,3 +104,78 @@
   font-size: 0.85rem;
   padding: 10px;
 }
+/* --- Modal Styles --- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  padding-top: 0px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  h3, .closeBtn {
+    padding-top: 24px;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h3 {
+    font-size: 1.2rem;
+    color: var(--text-dark);
+  }
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  
+  &:hover {
+    color: var(--text-dark);
+  }
+}
+
+.textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: #F98866; // Your sunrise brand color
+    box-shadow: 0 0 0 2px rgba(249, 136, 102, 0.2);
+  }
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
