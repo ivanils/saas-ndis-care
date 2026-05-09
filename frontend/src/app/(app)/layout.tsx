@@ -1,6 +1,7 @@
 // src/app/(app)/layout.tsx
 import React from 'react';
 import Sidebar from '../components/Sidebar';
+import TopHeader from '../components/TopHeader';
 
 export default function AppLayout({
   children,
@@ -14,9 +15,8 @@ export default function AppLayout({
       <Sidebar />
       
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* TODO: Here we will inject the <TopHeader /> component later */}
-        
-        <main style={{ padding: '32px 48px', flex: 1, overflowY: 'auto' }}>
+        <TopHeader />
+        <main className="app-main-content">
           {children}
         </main>
       </div>

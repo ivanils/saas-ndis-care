@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import {supabase} from './lib/supabase';
+import {supabase} from '@/lib/supabase';
 import styles from './page.module.scss';
 
 export default function WelcomeScreen() {

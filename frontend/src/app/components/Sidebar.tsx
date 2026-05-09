@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, CalendarDays, Users, Settings, LogOut } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import styles from './Sidebar.module.scss';
 
 const NAV_ITEMS = [

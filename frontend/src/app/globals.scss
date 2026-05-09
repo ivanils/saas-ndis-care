@@ -19,14 +19,16 @@
   --border-color: #F1F5F9;
   
   // Status Colors
-  --status-success-bg: #E6F4EA;   // Pastel green
-  --status-success-text: #1E8E3E;
-  --status-warning-bg: #FEF3C7;   // Pastel yellow/gold (In Progress)
-  --status-warning-text: #B45309;
-  --status-alert-bg: #FEE2E2;     // Pastel red (Medical Alert)
-  --status-alert-text: #B91C1C;
-  --status-neutral-bg: #F1F5F9;   // Pastel gray (Assigned)
-  --status-neutral-text: #475569;
+  --status-completed-bg: #E6F4EA;   // Pastel green
+  --status-completed-text: #1E8E3E;
+  --status-in-progress-bg: #3f3d35;   // Pastel black (In Progress)
+  --status-in-progress-text: #ffffff;
+  --status-alert-bg: #ffbb00;     // Pastel orange (Medical Alert)
+  --status-alert-text: #4b2e00;
+  --status-assigned-bg: #87c3ff;   // Pastel blue (Assigned)
+  --status-assigned-text: #1e37c4;
+  --status-cancelled-bg: #f8d7da;  // Pastel red (Cancelled)
+  --status-cancelled-text: #842029;
 
   // Geometry and Shadows
   --shadow-floating: 0 10px 40px rgba(0, 0, 0, 0.04);
@@ -97,6 +99,12 @@ a {
     border-color: var(--color-primary);
   }
 }
+// Form Elements
+.app-main-content{
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
 
 // Badges (Status labels)
 .badge {
@@ -107,20 +115,24 @@ a {
   font-size: 0.8rem;
   font-weight: 600;
 
-  &.success {
-    background-color: var(--status-success-bg);
-    color: var(--status-success-text);
+  &.completed {
+    background-color: var(--status-completed-bg);
+    color: var(--status-completed-text);
   }
-  &.warning {
-    background-color: var(--status-warning-bg);
-    color: var(--status-warning-text);
+  &.in-progress {
+    background-color: var(--status-in-progress-bg);
+    color: var(--status-in-progress-text);
   }
   &.alert {
     background-color: var(--status-alert-bg);
     color: var(--status-alert-text);
   }
-  &.neutral {
-    background-color: var(--status-neutral-bg);
-    color: var(--status-neutral-text);
+  &.assigned {
+    background-color: var(--status-assigned-bg);
+    color: var(--status-assigned-text);
+  }
+  &.cancelled {
+    background-color: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
   }
 }

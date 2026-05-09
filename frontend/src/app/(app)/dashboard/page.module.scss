@@ -1,0 +1,48 @@
+// src/app/(app)/dashboard/page.module.scss
+
+.dashboardWrapper {
+    width: 100%;
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.column {
+    &:first-child {
+        flex: 6;
+    }
+
+    &:last-child {
+        flex: 3;
+        margin-left: 32px;
+    }
+
+    display: flex;
+    flex-direction: column;
+}
+
+// Responsive: Stack columns on smaller screens
+@media (max-width: 1100px) {
+    .mainContent {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .column {
+        &:first-child {
+            flex: 1;
+            width: 100%;
+            margin: 0;
+            margin-bottom: 32px;
+        }
+        
+        &:last-child {
+            flex: 1;
+            width: 100%;
+            margin: 0;
+        }
+    }
+}
