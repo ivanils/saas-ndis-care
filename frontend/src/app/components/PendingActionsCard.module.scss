@@ -1,19 +1,34 @@
-// src/components/PendingActionsCard.module.scss
+/* src/components/PendingActionsCard.module.scss */
 
 .cardContainer {
-  display: flex;
-  flex-direction: column;
+  padding: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--color-surface);
 }
 
 .cardTitle {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-dark);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-.actionList {
-  list-style: none;
+.loaderBox {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  color: var(--text-muted);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.actionsList {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -23,35 +38,62 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-color);
 
-  // Remueve la línea inferior del último elemento
+  /* El último elemento no necesita borde abajo ni padding extra */
   &:last-child {
-    padding-bottom: 0;
     border-bottom: none;
+    padding-bottom: 0;
   }
 }
 
-.actionText {
-  flex: 1;
-  font-size: 0.9rem;
-  line-height: 1.4;
+.actionInfo {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
 }
 
-.title {
-  color: var(--text-dark);
+.actionIcon {
+  margin-top: 2px;
+
+  &.urgent {
+    color: var(--status-alert-text);
+  }
+  
+  &.warning {
+    color: #EAB308; /* Yellow */
+  }
+
+  &.normal {
+    color: var(--text-muted);
+  }
+}
+
+.actionTextPrimary {
+  font-size: 0.95rem;
   font-weight: 500;
+  color: var(--text-dark);
 }
 
-.subtitle {
+.actionTextSecondary {
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
 .actionBtn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   padding: 6px 16px;
-  font-size: 0.8rem;
-  border-radius: 20px; // Forma de pastilla (pill) como en el diseño
-  white-space: nowrap; // Evita que el texto del botón salte de línea
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: var(--color-bg);
+    border-color: var(--text-muted);
+  }
 }

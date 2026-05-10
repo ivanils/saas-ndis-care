@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { MapPin, PencilLine, FileText, Loader2, X, CheckCircle, AlertTriangle, Phone, Hash, Clock } from 'lucide-react';
+import { MapPin, PencilLine, FileText, Loader2, X, CheckCircle, AlertTriangle, Phone, Hash, Clock, AlertOctagon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ActiveShiftCard.module.scss';
 
@@ -25,10 +25,11 @@ interface ActiveShiftData {
     last_name: string;
     avatar_url: string | null;
     medical_alerts: string | null;
-    ndis_id: string | null;           
+    ndis_id: string | null;          
     emergency_contact: string | null;
   } | null;
 }
+
 interface PastNote {
   id: string;
   content: string;
@@ -43,18 +44,28 @@ export default function ActiveShiftCard() {
   // State to hold active shift data
   const [activeShift, setActiveShift] = useState<ActiveShiftData | null>(null);
   const [loading, setLoading] = useState(true);
+  
   // State to hold user's current GPS location
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  
   // State to show a loading spinner on the button while saving to the DB
   const [isClockingOut, setIsClockingOut] = useState(false);
+  
   // Care Note Compliance States
   const [hasCareNote, setHasCareNote] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [noteContent, setNoteContent] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
+
+  // NEW: Incident Report States
+  const [hasIncident, setHasIncident] = useState(false);
+  const [incidentDescription, setIncidentDescription] = useState('');
+  const [existingIncidentId, setExistingIncidentId] = useState<string | null>(null);
+  
   // Care Plan State
   const [isCarePlanOpen, setIsCarePlanOpen] = useState(false);
+  
   // Past Notes State
   const [pastNotes, setPastNotes] = useState<PastNote[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(false);
@@ -65,6 +76,7 @@ export default function ActiveShiftCard() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+        
         // 1. Fetch the shift
         const { data: shiftData, error: shiftError } = await supabase
           .from('shifts')
@@ -72,23 +84,38 @@ export default function ActiveShiftCard() {
           .eq('worker_id', user.id)
           .eq('status', 'in_progress')
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (shiftError && shiftError.code !== 'PGRST116') throw shiftError;
+        
         if (shiftData) {
           setActiveShift(shiftData as unknown as ActiveShiftData);
 
-          // 2. Check if a care note already exists for this shift
+          // 2. Check if a care note already exists for this shift (USING .maybeSingle())
           const { data: noteData } = await supabase
             .from('care_notes')
             .select('content')
             .eq('shift_id', shiftData.id)
             .eq('worker_id', user.id)
-            .single();
+            .maybeSingle();
 
           if (noteData) {
             setHasCareNote(true);
             setNoteContent(noteData.content); // Pre-load the existing text
+          }
+
+          // 3. Check if an incident report already exists for this shift (USING .maybeSingle())
+          const { data: incidentData } = await supabase
+            .from('incident_reports')
+            .select('id, initial_description')
+            .eq('shift_id', shiftData.id)
+            .eq('worker_id', user.id)
+            .maybeSingle();
+
+          if (incidentData) {
+            setHasIncident(true);
+            setIncidentDescription(incidentData.initial_description || '');
+            setExistingIncidentId(incidentData.id);
           }
         }
       } catch (error) {
@@ -97,6 +124,7 @@ export default function ActiveShiftCard() {
         setLoading(false);
       }
     };
+
     // Fetch the user's current GPS location
     const fetchLocation = () => {
       if (!navigator.geolocation) {
@@ -131,7 +159,6 @@ export default function ActiveShiftCard() {
     try {
       const { data, error } = await supabase
         .from('care_notes')
-        // Try to fetch the worker's name. If profiles join fails due to DB setup, we'll handle it gracefully in the UI.
         .select(`id, content, created_at, profiles (first_name, last_name)`)
         .eq('participant_id', activeShift.participant_id)
         .neq('shift_id', activeShift.id) // Exclude the note for the CURRENT shift
@@ -146,7 +173,7 @@ export default function ActiveShiftCard() {
     }
   };
 
-  // --- SAVE / UPDATE CARE NOTE LOGIC ---
+  // --- SAVE / UPDATE CARE NOTE & INCIDENT LOGIC ---
   const handleSaveCareNote = async () => {
     if (!noteContent.trim() || !activeShift) return;
 
@@ -154,8 +181,8 @@ export default function ActiveShiftCard() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
+      // 1. Save or Update Care Note
       if (hasCareNote) {
-        // UPDATE existing note
         const { error } = await supabase
           .from('care_notes')
           .update({ content: noteContent })
@@ -164,7 +191,6 @@ export default function ActiveShiftCard() {
 
         if (error) throw error;
       } else {
-        // INSERT new note
         const { error } = await supabase
           .from('care_notes')
           .insert({
@@ -179,10 +205,35 @@ export default function ActiveShiftCard() {
         setHasCareNote(true);
       }
 
+      // 2. Save, Update, or Remove Incident Report
+      if (hasIncident && incidentDescription.trim()) {
+        if (existingIncidentId) {
+          // Update existing incident
+          await supabase.from('incident_reports').update({ initial_description: incidentDescription }).eq('id', existingIncidentId);
+        } else {
+          // Create new incident
+          const { data: newIncident, error: incError } = await supabase.from('incident_reports').insert({
+            agency_id: activeShift.agency_id,
+            worker_id: user?.id,
+            participant_id: activeShift.participant_id,
+            shift_id: activeShift.id,
+            status: 'pending',
+            initial_description: incidentDescription
+          }).select('id').single();
+          
+          if (!incError && newIncident) setExistingIncidentId(newIncident.id);
+        }
+      } else if (!hasIncident && existingIncidentId) {
+        // User unchecked the box, so we delete the pending report
+        await supabase.from('incident_reports').delete().eq('id', existingIncidentId);
+        setExistingIncidentId(null);
+        setIncidentDescription('');
+      }
+
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Error saving care note:', error);
-      alert('Failed to save care note. Please try again.');
+      console.error('Error saving care note/incident:', error);
+      alert('Failed to save records. Please try again.');
     } finally {
       setIsSavingNote(false);
     }
@@ -251,10 +302,11 @@ export default function ActiveShiftCard() {
       </div>
     );
   }
+  
   const participant = activeShift.participants;
   const participantName = `${participant.first_name} ${participant.last_name}`;
   const avatarUrl = participant.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(participantName)}&background=FEF3C7&color=B45309`;
-
+  
   return (
     <>
       <div className={`card-sunrise ${styles.cardContainer}`}>
@@ -322,10 +374,11 @@ export default function ActiveShiftCard() {
           </button>
         </div>
       </div>
-      {/*  Care Note Modal */}
+      
+      {/* Care Note & Incident Modal */}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
+          <div className={styles.modalContent} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
 
             <div className={styles.modalHeader}>
               <h3>Shift Notes for {participantName}</h3>
@@ -334,12 +387,42 @@ export default function ActiveShiftCard() {
               </button>
             </div>
 
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 500 }}>General Observations</p>
             <textarea
               className={styles.textarea}
               placeholder="Detail the activities, behavioral observations, and any incidents during this shift..."
               value={noteContent}
               onChange={(e) => setNoteContent(e.target.value)}
             />
+
+            {/* INCIDENT REPORTING TOGGLE */}
+            <div style={{ marginTop: '16px', marginBottom: '24px', padding: '16px', backgroundColor: hasIncident ? '#FEF2F2' : 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: hasIncident ? '1px solid var(--status-alert-text)' : '1px solid var(--border-color)', transition: 'all 0.2s' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600, color: hasIncident ? 'var(--status-alert-text)' : 'var(--text-dark)' }}>
+                <input 
+                  type="checkbox" 
+                  checked={hasIncident} 
+                  onChange={(e) => setHasIncident(e.target.checked)}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--status-alert-text)', cursor: 'pointer' }}
+                />
+                <AlertOctagon size={18} />
+                Report an Incident during this shift
+              </label>
+
+              {hasIncident && (
+                <div style={{ marginTop: '12px' }}>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-dark)', marginBottom: '8px' }}>
+                    Briefly describe what happened. A formal incident report draft will automatically be added to your Pending Actions for further details.
+                  </p>
+                  <textarea 
+                    className={styles.textarea}
+                    placeholder="E.g., Arthur tripped near the staircase and scraped his knee. First aid applied..."
+                    value={incidentDescription}
+                    onChange={(e) => setIncidentDescription(e.target.value)}
+                    style={{ minHeight: '100px', marginBottom: 0, borderColor: '#FCA5A5' }}
+                  />
+                </div>
+              )}
+            </div>
 
             <div className={styles.modalActions}>
               <button className="btn-secondary" onClick={() => setIsModalOpen(false)}>
@@ -349,16 +432,17 @@ export default function ActiveShiftCard() {
                 <button
                   className="btn-primary"
                   onClick={handleSaveCareNote}
-                  disabled={!noteContent.trim() || isSavingNote}
-                  style={{ width: 'auto', padding: '8px 24px', opacity: (!noteContent.trim() || isSavingNote) ? 0.6 : 1 }}
+                  disabled={!noteContent.trim() || (hasIncident && !incidentDescription.trim()) || isSavingNote}
+                  style={{ width: 'auto', padding: '8px 24px', opacity: (!noteContent.trim() || (hasIncident && !incidentDescription.trim()) || isSavingNote) ? 0.6 : 1 }}
                 >
-                  {isSavingNote ? 'Saving...' : (hasCareNote ? 'Update Note' : 'Submit Note')}
+                  {isSavingNote ? 'Saving...' : (hasCareNote ? 'Update Records' : 'Submit Records')}
               </button>
             </div>
 
           </div>
         </div>
       )}
+      
       {/* --- CARE PLAN & HISTORY MODAL --- */}
       {isCarePlanOpen && (
         <div className={styles.modalOverlay} style={{ overflowY: 'auto', padding: '20px 0' }}>
