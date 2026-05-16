@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { AlertTriangle, FileText, AlertOctagon, Loader2 } from 'lucide-react';
+import { AlertTriangle, FileText, AlertOctagon, Loader2, Wrench, X } from 'lucide-react';
 import styles from './PendingActionsCard.module.scss';
 
 interface ExpiringCert {
@@ -21,7 +21,6 @@ interface PendingIncident {
     } | null;
 }
 
-// NUEVO: Interfaz para las Políticas
 interface PendingPolicy {
     id: string;
     title: string;
@@ -30,8 +29,14 @@ interface PendingPolicy {
 export default function PendingActionsCard() {
     const [expiringCerts, setExpiringCerts] = useState<ExpiringCert[]>([]);
     const [pendingIncidents, setPendingIncidents] = useState<PendingIncident[]>([]);
-    const [pendingPolicies, setPendingPolicies] = useState<PendingPolicy[]>([]); // NUEVO ESTADO
+    const [pendingPolicies, setPendingPolicies] = useState<PendingPolicy[]>([]);
     const [loading, setLoading] = useState(true);
+    const [comingSoonModal, setComingSoonModal] = useState<{ isOpen: boolean; title: string; message: string }>({
+        isOpen: false,
+        title: '',
+        message: ''
+    });
+
 
     useEffect(() => {
         const fetchPendingActions = async () => {
@@ -64,7 +69,7 @@ export default function PendingActionsCard() {
 
                 setPendingIncidents((incidentData as unknown as PendingIncident[]) || []);
 
-                // 3. NUEVO: Fetch Pending Policies
+                // 3. Fetch Pending Policies
                 const { data: policyData } = await supabase
                     .from('worker_policies')
                     .select('id, title')
@@ -83,7 +88,9 @@ export default function PendingActionsCard() {
 
         fetchPendingActions();
     }, []);
-
+    const openComingSoon = (title: string, message: string) => {
+        setComingSoonModal({ isOpen: true, title, message });
+    };
     const getDaysLeft = (expirationDate: string) => {
         const today = new Date();
         const expDate = new Date(expirationDate);
@@ -94,7 +101,7 @@ export default function PendingActionsCard() {
     const formatDate = (isoString: string) => {
         return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
-    // --- NEW HANDLER for Acknowledging Policies ---
+    // --- HANDLER for Acknowledging Policies ---
     const handleAcknowledgePolicy = async (policyId: string) => {
         try {
             // 1. update status to 'acknowledged' in the database
@@ -126,101 +133,139 @@ export default function PendingActionsCard() {
         );
     }
 
-    // Now we check all three arrays to see if they are completely empty
+    // check all three arrays to see if they are completely empty
     const hasNoActions = expiringCerts.length === 0 && pendingIncidents.length === 0 && pendingPolicies.length === 0;
 
     return (
-        <div className={`card-white ${styles.cardContainer}`}>
-            <h3 className={styles.cardTitle}>Pending Actions</h3>
+        <>
+            <div className={`card-white ${styles.cardContainer}`}>
+                <h3 className={styles.cardTitle}>Pending Actions</h3>
 
-            {hasNoActions ? (
-                <div className={styles.emptyState}>
-                    <p>You are all caught up! No pending actions.</p>
-                </div>
-            ) : (
-                <div className={styles.actionsList}>
+                {hasNoActions ? (
+                    <div className={styles.emptyState}>
+                        <p>You are all caught up! No pending actions.</p>
+                    </div>
+                ) : (
+                    <div className={styles.actionsList}>
 
-                    {/* 1. Incident reports (Highest Priority - Red) */}
-                    {pendingIncidents.map((incident) => {
-                        const participantName = incident.participants
-                            ? `${incident.participants.first_name} ${incident.participants.last_name}`
-                            : 'Unknown Participant';
+                        {/* 1. Incident reports (Highest Priority - Red) */}
+                        {pendingIncidents.map((incident) => {
+                            const participantName = incident.participants
+                                ? `${incident.participants.first_name} ${incident.participants.last_name}`
+                                : 'Unknown Participant';
 
-                        return (
-                            <div key={incident.id} className={styles.actionItem}>
+                            return (
+                                <div key={incident.id} className={styles.actionItem}>
+                                    <div className={styles.actionInfo}>
+                                        <AlertOctagon
+                                            size={20}
+                                            className={`${styles.actionIcon} ${styles.urgent}`}
+                                            style={{ color: 'red' }}
+                                        />
+                                        <div>
+                                            <p className={styles.actionTextPrimary}>
+                                                File Incident Report
+                                            </p>
+                                            <p className={styles.actionTextSecondary}>
+                                                For {participantName} ({formatDate(incident.created_at)})
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        className={styles.actionBtn}
+                                        onClick={() => openComingSoon('Incident Reporting', 'The full incident report form is currently under development. This feature will allow workers to submit detailed legal and medical observations.')}
+                                    >
+                                        Draft
+                                    </button>
+                                </div>
+                            );
+                        })}
+
+                        {/* 2. Expiring Certifications (Orange / Yellow) */}
+                        {expiringCerts.map((cert) => {
+                            const daysLeft = getDaysLeft(cert.expiration_date);
+                            const isUrgent = daysLeft <= 14;
+
+                            return (
+                                <div key={cert.id} className={styles.actionItem}>
+                                    <div className={styles.actionInfo}>
+                                        <AlertTriangle
+                                            size={20}
+                                            className={`${styles.actionIcon} ${isUrgent ? styles.urgent : styles.warning}`}
+                                            style={{ color: isUrgent ? 'red' : '#EAB308' }}
+                                        />
+                                        <div>
+                                            <p className={styles.actionTextPrimary}>
+                                                Renew {cert.type}
+                                            </p>
+                                            <p className={styles.actionTextSecondary}>
+                                                Expires in {daysLeft} days
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        className={styles.actionBtn}
+                                        onClick={() => openComingSoon('Document Upload', 'The document upload and OCR validation system is under development. In the final version, you will be able to upload PDF or JPG files here.')}
+                                    >
+                                        Upload
+                                    </button>
+                                </div>
+                            );
+                        })}
+
+                        {/* 3. Dynamic Policies (Gray) */}
+                        {pendingPolicies.map((policy) => (
+                            <div key={policy.id} className={styles.actionItem}>
                                 <div className={styles.actionInfo}>
-                                    <AlertOctagon
-                                        size={20}
-                                        className={`${styles.actionIcon} ${styles.urgent}`}
-                                        style={{ color: 'red' }}
-                                    />
+                                    <FileText size={20} className={`${styles.actionIcon} ${styles.normal}`} style={{ color: 'blue' }} />
                                     <div>
                                         <p className={styles.actionTextPrimary}>
-                                            File Incident Report
-                                        </p>
-                                        <p className={styles.actionTextSecondary}>
-                                            For {participantName} ({formatDate(incident.created_at)})
+                                            {policy.title}
                                         </p>
                                     </div>
                                 </div>
-                                <button className={styles.actionBtn}>
-                                    Draft
+                                <button
+                                    className={styles.actionBtn}
+                                    onClick={() => handleAcknowledgePolicy(policy.id)}
+                                >
+                                    Sign
                                 </button>
                             </div>
-                        );
-                    })}
+                        ))}
 
-                    {/* 2. Expiring Certifications (Orange / Yellow) */}
-                    {expiringCerts.map((cert) => {
-                        const daysLeft = getDaysLeft(cert.expiration_date);
-                        const isUrgent = daysLeft <= 14;
+                    </div>
+                )}
+            </div>
+            {comingSoonModal.isOpen && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
 
-                        return (
-                            <div key={cert.id} className={styles.actionItem}>
-                                <div className={styles.actionInfo}>
-                                    <AlertTriangle
-                                        size={20}
-                                        className={`${styles.actionIcon} ${isUrgent ? styles.urgent : styles.warning}`}
-                                        style={{ color: isUrgent ? 'red' : '#EAB308' }}
-                                    />
-                                    <div>
-                                        <p className={styles.actionTextPrimary}>
-                                            Renew {cert.type}
-                                        </p>
-                                        <p className={styles.actionTextSecondary}>
-                                            Expires in {daysLeft} days
-                                        </p>
-                                    </div>
-                                </div>
-                                <button className={styles.actionBtn}>
-                                    Upload
-                                </button>
-                            </div>
-                        );
-                    })}
+                        <button
+                            className={styles.closeBtn}
+                            onClick={() => setComingSoonModal({ ...comingSoonModal, isOpen: false })}
+                        >
+                            <X size={20} />
+                        </button>
 
-                    {/* 3. Dynamic Policies (Gray) */}
-                    {pendingPolicies.map((policy) => (
-                        <div key={policy.id} className={styles.actionItem}>
-                            <div className={styles.actionInfo}>
-                                <FileText size={20} className={`${styles.actionIcon} ${styles.normal}`} style={{ color: 'blue' }} />
-                                <div>
-                                    <p className={styles.actionTextPrimary}>
-                                        {policy.title}
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                className={styles.actionBtn}
-                                onClick={() => handleAcknowledgePolicy(policy.id)} 
-                            >
-                                Sign
-                            </button>
+                        <div className={styles.iconCircle}>
+                            <Wrench size={24} color="var(--text-muted)" />
                         </div>
-                    ))}
 
+                        <h3 className={styles.modalTitle}>{comingSoonModal.title}</h3>
+
+                        <p className={styles.modalMessage}>
+                            {comingSoonModal.message}
+                        </p>
+
+                        <button
+                            className={`btn-primary ${styles.fullWidthBtn}`}
+                            onClick={() => setComingSoonModal({ ...comingSoonModal, isOpen: false })}
+                        >
+                            Got it
+                        </button>
+                    </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }
