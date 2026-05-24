@@ -569,6 +569,6 @@ export default function MyShiftsPage() {
         </div>
       )}
 
-    </div> // <--- This is the final container closing div
+    </div> 
   );
 }
