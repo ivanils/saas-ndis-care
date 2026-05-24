@@ -1,0 +1,275 @@
+/* src/app/(app)/participants/page.module.scss */
+
+.pageContainer {
+  padding: 32px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* --- HEADER & CONTROLS --- */
+.header {
+  margin-bottom: 32px;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+  }
+
+  p {
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+}
+
+.controlsBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+/* View Toggle (Grid / List) */
+.viewToggle {
+  display: flex;
+  background-color: #FFF;
+  border: 1px solid #FBCFE8; /* Soft Bellvi orange/pink border */
+  border-radius: 30px;
+  padding: 4px;
+}
+
+.toggleBtn {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #F97316;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &.active {
+    background-color: #F97316;
+    color: #FFF;
+  }
+}
+
+/* Filters & Search */
+.filtersGroup {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.selectInput, .searchInput {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background-color: #FFF;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  outline: none;
+  cursor: pointer;
+  
+  &:focus {
+    border-color: #F97316;
+  }
+}
+
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .searchIcon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-muted);
+  }
+
+  .searchInput {
+    padding-left: 36px;
+    min-width: 250px;
+    cursor: text;
+  }
+}
+
+/* --- GRID VIEW --- */
+.gridView {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.gridCard {
+  background-color: #FFF;
+  border-radius: 16px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    border-color: #F1F5F9;
+    transform: translateY(-2px);
+  }
+}
+
+.avatarLarge {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 16px;
+  border: 2px solid #F8FAFC;
+}
+
+.nameText {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.ndisIdText {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.nextShiftText {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  margin-top: 16px;
+}
+
+/* --- LIST VIEW --- */
+.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.listRow {
+  background-color: #FFF;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+  }
+}
+
+.listProfileGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 250px;
+}
+
+.avatarSmall {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.listInfoGroup {
+  display: flex;
+  flex-direction: column;
+
+  .nameText {
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+  }
+
+  .ndisIdText {
+    margin-bottom: 0;
+  }
+}
+
+.listShiftText {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  width: 200px;
+}
+
+/* --- BADGES & BUTTONS --- */
+.tagBadge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+
+  &.alert {
+    background-color: #FEE2E2;
+    color: #DC2626;
+  }
+
+  &.support {
+    background-color: #E0E7FF;
+    color: #4338CA;
+  }
+
+  &.general {
+    background-color: #F1F5F9;
+    color: #475569;
+  }
+}
+
+.outlineBtn {
+  background-color: transparent;
+  border: 1px solid #F97316;
+  color: #F97316;
+  padding: 8px 24px;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+
+  &:hover {
+    background-color: #FFF7ED;
+  }
+}
+
+.listBtnWrapper {
+  width: auto;
+  .outlineBtn {
+    width: auto;
+  }
+}
+
+/* Utilities */
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  padding: 60px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-color);
+  color: var(--text-muted);
+}
