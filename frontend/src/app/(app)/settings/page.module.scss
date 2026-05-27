@@ -57,7 +57,8 @@
   &.active {
     color: var(--text-dark);
     font-weight: 500;
-    border-left-color: #F97316; /* Bellvi Orange */
+    border-left-color: #F97316;
+    /* Bellvi Orange */
   }
 }
 
@@ -74,7 +75,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 40px; /* Spacing between major sections */
+  gap: 40px;
+  /* Spacing between major sections */
 }
 
 .sectionTitle {
@@ -185,12 +187,15 @@
   @extend .input;
   width: 100%;
   background-color: #F8FAFC;
-  color: #94A3B8; /* Slate 400 */
+  color: #94A3B8;
+  /* Slate 400 */
   cursor: not-allowed;
-  padding-right: 48px; /* Room for the lock icon */
-  
+  padding-right: 48px;
+  /* Room for the lock icon */
+
   &:focus {
-    border-color: var(--border-color); /* Prevents orange focus on disabled */
+    border-color: var(--border-color);
+    /* Prevents orange focus on disabled */
   }
 }
 
@@ -242,8 +247,14 @@
   justify-content: center;
   padding: 60px;
 }
+
 // media queries 
 @media (max-width: 768px) {
+  .contentArea {
+    flex: 1;
+    width: 100%;
+  }
+
   .pageContainer {
     padding: 16px;
   }
@@ -258,21 +269,22 @@
     flex-direction: row;
     overflow-x: auto;
     padding-bottom: 8px;
-    white-space: nowrap; 
-    
-    
-    -ms-overflow-style: none;  
-    scrollbar-width: none;  
+    white-space: nowrap;
+
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
     &::-webkit-scrollbar {
-      display: none; 
+      display: none;
     }
   }
 
   .tabBtn {
     border-left: none;
-    border-bottom: 3px solid transparent; 
+    border-bottom: 3px solid transparent;
     padding: 12px 16px;
-    
+
     &.active {
       border-left-color: transparent;
       border-bottom-color: #F97316;
@@ -296,6 +308,7 @@
 
   .actionsRow {
     justify-content: stretch;
+
     .primaryBtn {
       width: 100%;
     }

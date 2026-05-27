@@ -1,7 +1,7 @@
 // src/app/(app)/settings/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Lock } from 'lucide-react';
@@ -10,13 +10,18 @@ import styles from './page.module.scss';
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab] = useState('My Profile');
+  const [userId, setUserId] = useState<string | null>(null);
 
   // --- FORM STATES ---
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState('Field Worker');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const TABS = ['My Profile', 'Security', 'Preferences', 'Legal & Support'];
 
   useEffect(() => {
@@ -25,20 +30,21 @@ export default function SettingsPage() {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error || !user) throw error;
 
-        // Set email directly from auth
-        if (user.email) {
-          setEmail(user.email);
+        setUserId(user.id);
+        if (user.email) setEmail(user.email);
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, role, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          setFirstName(profile.first_name || '');
+          setLastName(profile.last_name || '');
+          if (profile.role) setRole(profile.role);
+          if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
         }
-
-        // --- NOTE FOR FUTURE ---
-        // If you have a 'profiles' table, you would fetch the first/last name here:
-        // const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        // if (profile) { setFirstName(profile.first_name); setLastName(profile.last_name); }
-
-        // Mock data for MVP visual fidelity
-        setFirstName('Jane');
-        setLastName('Doe');
-
       } catch (err) {
         console.error('Error fetching user data:', err);
       } finally {
@@ -50,15 +56,103 @@ export default function SettingsPage() {
   }, []);
 
   const handleSaveChanges = async () => {
+    if (!userId) return;
     setSaving(true);
-    // Simulate API call delay for saving profile data
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setSaving(false);
-    alert('Profile updated successfully!');
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ first_name: firstName, last_name: lastName })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      await supabase.auth.updateUser({
+        data: { first_name: firstName, last_name: lastName }
+      });
+
+      alert('Profile updated successfully!');
+      window.location.reload(); 
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      alert('There was an error updating your profile.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // --- AVATAR UPLOAD HANDLER ---
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploadingAvatar(true);
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error('You must select an image to upload.');
+      }
+
+      const file = event.target.files[0];
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; 
+      if (file.size > MAX_FILE_SIZE) {
+        alert('Esta imagen es demasiado grande. Por favor, elige una que pese menos de 5MB.');
+        setUploadingAvatar(false);
+        return; 
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${userId}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      alert('Profile picture updated!');
+      
+      window.location.reload();
+
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Error uploading image. Please ensure you created the "avatars" public bucket in Supabase.');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  // --- AVATAR REMOVE HANDLER ---
+  const handleRemoveAvatar = async () => {
+    if (!userId) return;
+    try {
+      setUploadingAvatar(true);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('id', userId);
+
+      if (error) throw error;
+      setAvatarUrl(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(`${firstName} ${lastName}`)}&background=F1F5F9&color=64748B&size=150`;
+  
+  const displayAvatar = avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(`${firstName} ${lastName}`)}&background=F1F5F9&color=64748B&size=150`;
 
   if (loading) {
     return (
@@ -72,16 +166,12 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.pageContainer}>
-      
-      {/* Page Header */}
       <div className={styles.header}>
         <h1>Settings</h1>
         <p>{todayStr}</p>
       </div>
 
       <div className={styles.settingsLayout}>
-        
-        {/* Sidebar Navigation */}
         <div className={styles.sidebar}>
           {TABS.map(tab => (
             <button
@@ -94,9 +184,7 @@ export default function SettingsPage() {
           ))}
         </div>
 
-        {/* Main Content Area */}
         <div className={styles.contentArea}>
-          
           {activeTab === 'My Profile' && (
             <div className={styles.card}>
               
@@ -104,10 +192,41 @@ export default function SettingsPage() {
               <div>
                 <h3 className={styles.sectionTitle}>Profile Picture</h3>
                 <div className={styles.profilePictureGroup}>
-                  <Image src={avatarUrl} alt="Profile" width={80} height={80} className={styles.avatar} />
+                  {uploadingAvatar ? (
+                    <div className={styles.avatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC' }}>
+                      <Loader2 className="animate-spin" size={24} color="var(--text-muted)" />
+                    </div>
+                  ) : (
+                    <Image src={displayAvatar} alt="Profile" width={80} height={80} className={styles.avatar} unoptimized/>
+                  )}
+                  
                   <div className={styles.picActions}>
-                    <button className={styles.outlineBtn}>Upload New</button>
-                    <button className={styles.textBtn}>Remove</button>
+                    {/* INPUT INVISIBLE */}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      hidden 
+                      ref={fileInputRef} 
+                      onChange={handleAvatarUpload} 
+                    />
+                    
+                    <button 
+                      className={styles.outlineBtn} 
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                    >
+                      {uploadingAvatar ? 'Uploading...' : 'Upload New'}
+                    </button>
+                    
+                    {avatarUrl && (
+                      <button 
+                        className={styles.textBtn} 
+                        onClick={handleRemoveAvatar}
+                        disabled={uploadingAvatar}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -156,7 +275,7 @@ export default function SettingsPage() {
               <div>
                 <h3 className={styles.sectionTitle}>Work Details</h3>
                 <div className={styles.workDetails}>
-                  <div><span className={styles.label}>Role:</span> Field Worker</div>
+                  <div><span className={styles.label}>Role:</span> {role}</div>
                   <div><span className={styles.label}>Agency:</span> Sunrise Care Partners</div>
                 </div>
               </div>
@@ -175,7 +294,6 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Placeholders for other tabs */}
           {activeTab !== 'My Profile' && (
             <div className={styles.card}>
               <h3 className={styles.sectionTitle}>{activeTab}</h3>
@@ -187,7 +305,6 @@ export default function SettingsPage() {
 
         </div>
       </div>
-
     </div>
   );
 }

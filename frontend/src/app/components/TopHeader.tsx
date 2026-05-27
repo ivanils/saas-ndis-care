@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './TopHeader.module.scss';
@@ -16,14 +17,27 @@ export default function TopHeader() {
             day: 'numeric',
         });
     });
-    const [userName, setUserName] = useState('Jane Doe'); // Default fallback
+
+    const [userName, setUserName] = useState('Jane Doe');
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
     useEffect(() => {
-        // Fetch actual user profile name from Supabase
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            if (user?.user_metadata?.first_name) {
-                setUserName(`${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`);
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('first_name, last_name, avatar_url')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    if (profile.first_name) setUserName(`${profile.first_name} ${profile.last_name || ''}`);
+                    if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
+                } else if (user.user_metadata?.first_name) {
+                    setUserName(`${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`);
+                }
             }
         };
         fetchUser();
@@ -37,19 +51,33 @@ export default function TopHeader() {
             </div>
 
             <div className={styles.userActions}>
-                <button className={styles.notificationBtn}>
-                    <Bell size={20} />
-                    <span className={styles.notificationBadge} />
-                </button>
-                <div className={styles.avatarWrapper}>
+                <div style={{ position: 'relative' }}>
+                    <button
+                        className={styles.notificationBtn}
+                        onClick={() => setShowNotifications(!showNotifications)}
+                    >
+                        <Bell size={20} />
+                        <span className={styles.notificationBadge} />
+                    </button>
+
+                    {showNotifications && (
+                        <div className={styles.notificationDropdown}>
+                            <h4>Notifications</h4>
+                            <p>No new notifications right now.</p>
+                        </div>
+                    )}
+                </div>
+
+                <Link href="/settings" className={styles.avatarWrapper} title="Go to Settings">
                     <Image
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=f98866&color=fff`}
+                        src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=f98866&color=fff`}
                         alt={`${userName}'s avatar`}
                         width={44}
                         height={44}
                         className={styles.avatar}
+                        unoptimized
                     />
-                </div>
+                </Link>
             </div>
         </header>
     );
