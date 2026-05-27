@@ -2,6 +2,7 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
 import TopHeader from '../components/TopHeader';
+import styles from './layout.module.scss'; // Importamos el nuevo SCSS
 
 export default function AppLayout({
   children,
@@ -9,14 +10,12 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--color-bg)' }}>
-      
-      {/* Our new Sidebar component */}
+    <div className={styles.layoutWrapper}>
       <Sidebar />
       
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className={styles.mainContentContainer}>
         <TopHeader />
-        <main className="app-main-content">
+        <main className={styles.appMainContent}>
           {children}
         </main>
       </div>

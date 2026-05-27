@@ -273,3 +273,52 @@
   border: 1px dashed var(--border-color);
   color: var(--text-muted);
 }
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 16px;
+  }
+
+  .controlsBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .filtersGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .selectInput, .searchContainer, .searchInput {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .gridView {
+    grid-template-columns: 1fr; 
+  }
+
+  .listRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 16px;
+  }
+
+  .listProfileGroup {
+    width: 100%;
+  }
+
+  .listShiftText {
+    width: 100%;
+  }
+
+  .listBtnWrapper {
+    width: 100%;
+    margin-top: 8px;
+
+    .outlineBtn {
+      width: 100%;
+    }
+  }
+}

@@ -99,3 +99,34 @@
   object-fit: cover;
   border: 1px solid var(--border-color);
 }
+// media queries
+@media (max-width: 768px) {
+  .cardTitle {
+    margin-bottom: 24px;
+  }
+
+  .timeColumn {
+    width: 75px; 
+    padding-right: 12px;
+    font-size: 0.75rem;
+  }
+
+  
+  .timeline::before {
+    left: 81px; 
+  }
+
+  .contentColumn {
+    padding-left: 16px;
+    padding-right: 0;
+  }
+
+  .participantInfo {
+    font-size: 0.85rem;
+  }
+  
+  .avatarMini {
+    width: 32px;
+    height: 32px;
+  }
+}

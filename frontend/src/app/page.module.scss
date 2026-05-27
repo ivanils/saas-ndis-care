@@ -181,3 +181,43 @@
     color: var(--text-dark);
   }
 }
+// media query
+@media (max-width: 768px) {
+  .loginCard {
+
+    padding: 32px 24px !important;
+    width: calc(100% - 32px);
+    margin: 0 16px;
+  }
+
+  .logoIcon {
+    font-size: 2.2rem;
+  }
+
+  .logoText {
+    font-size: 1.8rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+
+  .glowBottomLeft {
+    bottom: -20vh;
+    left: -50vw;
+    width: 100vw;
+    height: 100vw;
+  }
+
+  .glowTopRight {
+    top: -20vh;
+    right: -50vw;
+    width: 120vw;
+    height: 120vw;
+  }
+}

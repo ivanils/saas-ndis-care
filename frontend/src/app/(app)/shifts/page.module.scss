@@ -48,11 +48,12 @@
   font-weight: 500;
   color: #F97316; /* Bellvi Orange */
   cursor: pointer;
-  transition: all 0.2s ease;
-
+  transition: all 0.5s ease;
+  
   &.active {
     background-color: #F97316;
     color: #FFF;
+    transition: all 0.5s ease;
   }
 }
 
@@ -810,4 +811,100 @@
   display: flex;
   justify-content: center;
   width: 100%;
+}
+// media queries 
+@media (max-width: 768px) {
+  .viewToggle{
+    justify-content: space-evenly;
+  }
+  .pageContainer {
+    padding: 16px;
+  }
+
+  .controlsBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .filtersGroup {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .selectInput {
+    flex: 1; 
+  }
+
+  .searchContainer {
+    width: 100%;
+    .searchInput {
+      width: 100%;
+      min-width: 0;
+    }
+  }
+
+  .listRow {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px 16px;
+  }
+
+  .dateCol {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+  }
+
+  .profileCol {
+    padding-left: 0;
+  }
+
+  .statusCol {
+    justify-content: flex-start;
+  }
+
+  .actionCol {
+    justify-content: stretch;
+    margin-top: 8px;
+    
+    .outlineBtn {
+      width: 100%;
+    }
+  }
+
+  .calendarNav {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .calendarHeader span {
+    font-size: 0.75rem;
+  }
+
+  .calendarCell {
+    min-height: 70px;
+    padding: 2px;
+  }
+
+  .dateNumber {
+    width: 22px;
+    height: 22px;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+  }
+
+  .shiftBlock {
+    font-size: 0.6rem;
+    padding: 2px 4px;
+  }
+
+  .drawerContainer, .clientModal {
+    max-width: 100%;
+    border-radius: 0; 
+  }
+
+  .clientModalOverlay, .drawerOverlay {
+    padding: 0; 
+  }
 }

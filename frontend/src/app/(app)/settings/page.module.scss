@@ -242,3 +242,62 @@
   justify-content: center;
   padding: 60px;
 }
+// media queries 
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 16px;
+  }
+
+  .settingsLayout {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    white-space: nowrap; 
+    
+    
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
+    &::-webkit-scrollbar {
+      display: none; 
+    }
+  }
+
+  .tabBtn {
+    border-left: none;
+    border-bottom: 3px solid transparent; 
+    padding: 12px 16px;
+    
+    &.active {
+      border-left-color: transparent;
+      border-bottom-color: #F97316;
+    }
+  }
+
+  .card {
+    padding: 24px 16px;
+  }
+
+  /* Stack form inputs vertically */
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .profilePictureGroup {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .actionsRow {
+    justify-content: stretch;
+    .primaryBtn {
+      width: 100%;
+    }
+  }
+}

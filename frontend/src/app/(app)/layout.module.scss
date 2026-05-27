@@ -1,0 +1,28 @@
+/* src/app/(app)/layout.module.scss */
+
+.layoutWrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+.mainContentContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; 
+}
+
+.appMainContent {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .layoutWrapper {
+    flex-direction: column;
+  }
+  
+  .mainContentContainer {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  }
+}

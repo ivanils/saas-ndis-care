@@ -1,4 +1,4 @@
-// src/app/(app)/dashboard/page.module.scss
+/* src/app/(app)/dashboard/page.module.scss */
 
 .dashboardWrapper {
     width: 100%;
@@ -24,7 +24,7 @@
     flex-direction: column;
 }
 
-// Responsive: Stack columns on smaller screens
+/* Tablet Responsiveness (Stack columns) */
 @media (max-width: 1100px) {
     .mainContent {
         flex-direction: column;
@@ -43,6 +43,19 @@
             flex: 1;
             width: 100%;
             margin: 0;
+        }
+    }
+}
+
+
+@media (max-width: 768px) {
+    .dashboardWrapper {
+        padding: 16px; /* Añade un respiro alrededor de todo el dashboard en móviles */
+    }
+
+    .column {
+        &:first-child {
+            margin-bottom: 16px; /* Reduce el hueco entre la columna superior y la inferior */
         }
     }
 }

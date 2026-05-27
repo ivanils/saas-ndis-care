@@ -73,3 +73,21 @@
   height: 100%;
   object-fit: cover;
 }
+// media query 
+@media (max-width: 768px) {
+  .headerContainer {
+    padding: 16px 20px; 
+  }
+
+  .welcomeText {
+    font-size: 1.25rem; 
+  }
+
+  .dateText {
+    font-size: 0.8rem;
+  }
+
+  .userActions {
+    gap: 12px; 
+  }
+}
