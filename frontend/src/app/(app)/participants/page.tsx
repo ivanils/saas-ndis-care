@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Search, LayoutGrid, List, X, Phone, HeartPulse, AlertTriangle, FileText } from 'lucide-react';
 import styles from './page.module.scss'; 
+import toast from 'react-hot-toast';
 
 // --- TYPES ---
 interface ParticipantBase {
@@ -349,7 +350,7 @@ export default function ParticipantsPage() {
                       {drawerDetails.emergency_contact_phone && (
                         <button 
                           className={styles.callBtn} 
-                          onClick={() => alert(`Simulating phone call to: ${drawerDetails.emergency_contact_phone}`)}
+                          onClick={() => toast.success(`Simulating phone call to: ${drawerDetails.emergency_contact_phone}`)}
                         >
                           <Phone size={16} /> Call Emergency Contact ({drawerDetails.emergency_contact_phone})
                         </button>

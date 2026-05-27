@@ -2,7 +2,8 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
 import TopHeader from '../components/TopHeader';
-import styles from './layout.module.scss'; // Importamos el nuevo SCSS
+import styles from './layout.module.scss'; 
+import { Toaster } from 'react-hot-toast';
 
 export default function AppLayout({
   children,
@@ -11,6 +12,16 @@ export default function AppLayout({
 }) {
   return (
     <div className={styles.layoutWrapper}>
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+        }} 
+      />
       <Sidebar />
       
       <div className={styles.mainContentContainer}>

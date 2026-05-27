@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Lock } from 'lucide-react';
 import styles from './page.module.scss';
+import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -55,7 +56,7 @@ export default function SettingsPage() {
     fetchUserData();
   }, []);
 
-  const handleSaveChanges = async () => {
+const handleSaveChanges = async () => {
     if (!userId) return;
     setSaving(true);
     
@@ -71,18 +72,21 @@ export default function SettingsPage() {
         data: { first_name: firstName, last_name: lastName }
       });
 
-      alert('Profile updated successfully!');
-      window.location.reload(); 
+      toast.success('Profile updated successfully!');
+      setTimeout(() => {
+        window.location.reload(); 
+      }, 1200);
+
     } catch (err) {
       console.error('Error updating profile:', err);
-      alert('There was an error updating your profile.');
+      toast.error('Error updating your profile.');
     } finally {
       setSaving(false);
     }
   };
 
   // --- AVATAR UPLOAD HANDLER ---
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploadingAvatar(true);
       if (!event.target.files || event.target.files.length === 0) {
@@ -90,9 +94,10 @@ export default function SettingsPage() {
       }
 
       const file = event.target.files[0];
-      const MAX_FILE_SIZE = 5 * 1024 * 1024; 
+
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       if (file.size > MAX_FILE_SIZE) {
-        alert('Esta imagen es demasiado grande. Por favor, elige una que pese menos de 5MB.');
+        toast.error('Image is too large. Max size is 5MB.');
         setUploadingAvatar(false);
         return; 
       }
@@ -118,13 +123,15 @@ export default function SettingsPage() {
       if (updateError) throw updateError;
 
       setAvatarUrl(publicUrl);
-      alert('Profile picture updated!');
       
-      window.location.reload();
+      toast.success('Profile picture updated!');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
 
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      alert('Error uploading image. Please ensure you created the "avatars" public bucket in Supabase.');
+      toast.error('Error uploading image.');
     } finally {
       setUploadingAvatar(false);
     }

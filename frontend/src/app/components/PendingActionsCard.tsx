@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AlertTriangle, FileText, AlertOctagon, Loader2, Wrench, X } from 'lucide-react';
 import styles from './PendingActionsCard.module.scss';
+import toast from 'react-hot-toast';
 
 interface ExpiringCert {
     id: string;
@@ -116,10 +117,11 @@ export default function PendingActionsCard() {
             setPendingPolicies((prevPolicies) =>
                 prevPolicies.filter((policy) => policy.id !== policyId)
             );
+            toast.success('Policy signed successfully!');
 
         } catch (error) {
             console.error('Error acknowledging policy:', error);
-            alert('Failed to acknowledge policy. Please try again.');
+            toast.error('Failed to sign policy. Please try again.');
         }
     };
     if (loading) {

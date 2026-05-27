@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { MapPin, PencilLine, FileText, Loader2, X, CheckCircle, AlertTriangle, Phone, Hash, Clock, AlertOctagon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './ActiveShiftCard.module.scss';
+import toast from 'react-hot-toast';
 
 const MapComponent = dynamic(() => import('./MapComponent'), {
   ssr: false,
@@ -161,8 +162,8 @@ export default function ActiveShiftCard() {
         .from('care_notes')
         .select(`id, content, created_at, profiles (first_name, last_name)`)
         .eq('participant_id', activeShift.participant_id)
-        .neq('shift_id', activeShift.id) // Exclude the note for the CURRENT shift
-        .order('created_at', { ascending: false }); // Newest first
+        .neq('shift_id', activeShift.id) 
+        .order('created_at', { ascending: false }); 
 
       if (error) throw error;
       setPastNotes(data as unknown as PastNote[]);
@@ -231,9 +232,10 @@ export default function ActiveShiftCard() {
       }
 
       setIsModalOpen(false);
+      toast.success('Records saved successfully!');
     } catch (error) {
       console.error('Error saving care note/incident:', error);
-      alert('Failed to save records. Please try again.');
+      toast.error('Failed to save records. Please try again.');
     } finally {
       setIsSavingNote(false);
     }
@@ -245,14 +247,14 @@ export default function ActiveShiftCard() {
 
     // COMPLIANCE CHECK: Prevent clock-out without a care note
     if (!hasCareNote) {
-      alert("⚠️ Compliance Error: You must add a Care Note before clocking out of this shift.");
+      toast.error("Compliance Error: Add a Care Note before clocking out.");
       setIsModalOpen(true);
       return;
     }
 
     // COMPLIANCE CHECK: Ensure GPS location is available before clocking out
     if (!location) {
-      alert("Please wait for GPS verification.");
+      toast.error("Please wait for GPS verification.");
       return;
     }
 
@@ -270,12 +272,14 @@ export default function ActiveShiftCard() {
 
       if (error) throw error;
 
-      // Force a full page reload to refresh both the left timeline and right cards
-      window.location.reload();
+      toast.success('Shift completed successfully!');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
 
     } catch (error) {
       console.error('Error during clock-out:', error);
-      alert('There was an error clocking out. Please try again.');
+      toast.error('Error clocking out. Please try again.');
       setIsClockingOut(false);
     }
   };

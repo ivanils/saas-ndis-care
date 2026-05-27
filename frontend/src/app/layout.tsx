@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import "./globals.scss"; // Cambiaremos la extensión a .scss en el siguiente paso
+import "./globals.scss"; 
 
-// Configuramos la fuente
 const jakarta = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
-  weight: ['400', '500', '600', '700'], // Los pesos que usaremos
-  variable: '--font-jakarta', // La exportamos como variable CSS
+  weight: ['400', '500', '600', '700'], 
+  variable: '--font-jakarta', 
 });
 
 export const metadata: Metadata = {
