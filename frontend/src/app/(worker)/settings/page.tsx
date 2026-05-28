@@ -21,6 +21,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('Field Worker');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [phone, setPhone] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const TABS = ['My Profile', 'Security', 'Preferences', 'Legal & Support'];
@@ -36,13 +37,14 @@ export default function SettingsPage() {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('first_name, last_name, role, avatar_url')
+          .select('first_name, last_name, role, avatar_url, phone')
           .eq('id', user.id)
           .single();
 
         if (profile) {
           setFirstName(profile.first_name || '');
           setLastName(profile.last_name || '');
+          setPhone(profile.phone || '');
           if (profile.role) setRole(profile.role);
           if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
         }
@@ -56,14 +58,14 @@ export default function SettingsPage() {
     fetchUserData();
   }, []);
 
-const handleSaveChanges = async () => {
+  const handleSaveChanges = async () => {
     if (!userId) return;
     setSaving(true);
-    
+
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ first_name: firstName, last_name: lastName })
+        .update({ first_name: firstName, last_name: lastName, phone: phone })
         .eq('id', userId);
 
       if (error) throw error;
@@ -74,7 +76,7 @@ const handleSaveChanges = async () => {
 
       toast.success('Profile updated successfully!');
       setTimeout(() => {
-        window.location.reload(); 
+        window.location.reload();
       }, 1200);
 
     } catch (err) {
@@ -86,7 +88,7 @@ const handleSaveChanges = async () => {
   };
 
   // --- AVATAR UPLOAD HANDLER ---
-const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploadingAvatar(true);
       if (!event.target.files || event.target.files.length === 0) {
@@ -99,7 +101,7 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
       if (file.size > MAX_FILE_SIZE) {
         toast.error('Image is too large. Max size is 5MB.');
         setUploadingAvatar(false);
-        return; 
+        return;
       }
 
       const fileExt = file.name.split('.').pop();
@@ -123,7 +125,7 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
       if (updateError) throw updateError;
 
       setAvatarUrl(publicUrl);
-      
+
       toast.success('Profile picture updated!');
       setTimeout(() => {
         window.location.reload();
@@ -158,7 +160,7 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
   };
 
   const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  
+
   const displayAvatar = avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(`${firstName} ${lastName}`)}&background=F1F5F9&color=64748B&size=150`;
 
   if (loading) {
@@ -194,7 +196,7 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
         <div className={styles.contentArea}>
           {activeTab === 'My Profile' && (
             <div className={styles.card}>
-              
+
               {/* Profile Picture Section */}
               <div>
                 <h3 className={styles.sectionTitle}>Profile Picture</h3>
@@ -204,30 +206,30 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
                       <Loader2 className="animate-spin" size={24} color="var(--text-muted)" />
                     </div>
                   ) : (
-                    <Image src={displayAvatar} alt="Profile" width={80} height={80} className={styles.avatar} unoptimized/>
+                    <Image src={displayAvatar} alt="Profile" width={80} height={80} className={styles.avatar} unoptimized />
                   )}
-                  
+
                   <div className={styles.picActions}>
                     {/* INPUT INVISIBLE */}
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      hidden 
-                      ref={fileInputRef} 
-                      onChange={handleAvatarUpload} 
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      ref={fileInputRef}
+                      onChange={handleAvatarUpload}
                     />
-                    
-                    <button 
-                      className={styles.outlineBtn} 
+
+                    <button
+                      className={styles.outlineBtn}
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingAvatar}
                     >
                       {uploadingAvatar ? 'Uploading...' : 'Upload New'}
                     </button>
-                    
+
                     {avatarUrl && (
-                      <button 
-                        className={styles.textBtn} 
+                      <button
+                        className={styles.textBtn}
                         onClick={handleRemoveAvatar}
                         disabled={uploadingAvatar}
                       >
@@ -241,23 +243,23 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
               {/* Personal Information Section */}
               <div>
                 <h3 className={styles.sectionTitle}>Personal Information</h3>
-                
+
                 <div className={styles.formGrid}>
                   <div className={styles.formGroup}>
                     <label>First Name</label>
-                    <input 
-                      type="text" 
-                      className={styles.input} 
-                      value={firstName} 
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                     />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Last Name</label>
-                    <input 
-                      type="text" 
-                      className={styles.input} 
-                      value={lastName} 
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                     />
                   </div>
@@ -266,14 +268,25 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
                 <div className={styles.formGroup}>
                   <label>Email Address</label>
                   <div className={styles.inputWrapper}>
-                    <input 
-                      type="email" 
-                      className={styles.inputDisabled} 
-                      value={email} 
-                      disabled 
+                    <input
+                      type="email"
+                      className={styles.inputDisabled}
+                      value={email}
+                      disabled
                       readOnly
                     />
                     <Lock size={16} className={styles.lockIcon} />
+                  </div>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Phone Number</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="0400 000 000"
+                    />
                   </div>
                 </div>
               </div>
@@ -289,8 +302,8 @@ const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) =>
 
               {/* Save Actions */}
               <div className={styles.actionsRow}>
-                <button 
-                  className={styles.primaryBtn} 
+                <button
+                  className={styles.primaryBtn}
                   onClick={handleSaveChanges}
                   disabled={saving}
                 >

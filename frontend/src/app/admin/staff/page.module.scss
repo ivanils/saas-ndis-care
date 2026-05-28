@@ -256,3 +256,36 @@
   align-items: center;
   background-color: #F8FAFC;
 }
+/* --- CONTACT INFO BOX (DRAWER) --- */
+.contactInfoBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0 24px 0;
+  padding: 16px;
+  background-color: #F8FAFC;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+
+  svg {
+    color: var(--text-muted);
+  }
+
+  a {
+    color: #38BDF8;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
