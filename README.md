@@ -1,6 +1,6 @@
 # 🏥 Bellvi | NDIS Care Management SaaS (MVP)
 
-> ⚠️ **Project Status: Active Development** > *The Worker Portal MVP is successfully completed. Active development has now shifted to the Admin/Coordinator Portal and Middleware security implementation.*
+> ⚠️ **Project Status: Active Development** > *The Worker and Admin/Coordinator Portals are successfully completed. Active development has now shifted to Next.js Middleware security, authentication, and Role-based Routing.*
 
 A B2B Multi-tenant SaaS platform tailored for Australian Disability Support and Home Care agencies. Bellvi ensures strict compliance with NDIS (National Disability Insurance Scheme) data isolation, audit requirements, and seamless shift management.
 
@@ -18,7 +18,7 @@ This project is structured as a modern web application utilizing a serverless ar
 * **Hardware-Level Multi-Tenancy:** Data isolation is enforced at the database engine level. Every core table (`profiles`, `participants`, `shifts`, `care_notes`) is bound by an `agency_id`, ensuring strict tenant data separation.
 * **Audit Trail Compliance:** Hard deletions (`DELETE`) are strictly prohibited for transactional medical records. The system utilizes a `deleted_at` column (Soft Deletes) to maintain an immutable history of shifts and care notes.
 * **File Storage:** Secure bucket handling via Supabase Storage for user avatars and medical documents.
-* **Role-Based Access Control (RBAC):** Users are assigned specific roles (`admin` or `worker`) which dictate UI rendering and data access.
+* **Role-Based Access Control (RBAC):** Users are assigned specific roles (`worker`, `admin`, or `super_admin`) which dictate UI rendering, data access, and tenant isolation scopes.
 
 ## 📍 Current Progress (MVP Roadmap)
 
@@ -31,10 +31,11 @@ This project is structured as a modern web application utilizing a serverless ar
   - [x] Participant Medical Profiles & Slide-over Drawer (`/participants`)
   - [x] Supabase Storage integration for Profile Pictures (`/settings`)
   - [x] UX Polish (react-hot-toast notifications, responsive mobile design)
-- [ ] **Phase 5:** **Admin / Coordinator Portal Implementation** *(Currently in progress)*
-  - [ ] Admin Dashboard & Live Map
-  - [ ] Rostering & Shift Assignment Engine
-  - [ ] Staff & Participant Management
-  - [ ] Compliance & Incident Audit Trail
-- [ ] **Phase 6:** Next.js Middleware Auth Protection & Role-based Routing.
+- [x] **Phase 5:** **Admin / Coordinator Portal Implementation**
+  - [x] Admin Dashboard & Live Map (Real-time GPS tracking)
+  - [x] Rostering & Shift Assignment Engine
+  - [x] Staff Management & Live Compliance Tracking (Certifications)
+  - [x] Compliance & Incident Audit Trail
+  - [x] **Super Admin / Platform Owner Portal** (Global Metrics & Tenant Management)
+- [ ] **Phase 6:** Next.js Middleware Auth Protection & Role-based Routing. *(Currently in progress)*
 - [ ] **Phase 7:** Vercel Production Deployment.
