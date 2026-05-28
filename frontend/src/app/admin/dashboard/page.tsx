@@ -2,6 +2,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation'; // <-- 1. Import useRouter
 import { supabase } from '@/lib/supabase';
 import { 
   Loader2, 
@@ -12,6 +14,11 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import styles from './page.module.scss';
+
+const MapComponent = dynamic(() => import('@/components/MapComponent'), {
+  ssr: false,
+  loading: () => <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center' }}><Loader2 className="animate-spin" color="var(--text-muted)" /></div>
+});
 
 // --- TYPES ---
 interface DashboardMetrics {
@@ -37,6 +44,8 @@ interface ActiveWorker {
 }
 
 export default function AdminDashboardPage() {
+  const router = useRouter(); // <-- 2. Initialize router
+  
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     activeShiftsCount: 0,
@@ -45,6 +54,8 @@ export default function AdminDashboardPage() {
   });
   const [activeWorkers, setActiveWorkers] = useState<ActiveWorker[]>([]);
   const [agencyId, setAgencyId] = useState<string | null>(null);
+  
+  const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number, name: string} | null>(null);
 
   useEffect(() => {
     const fetchAdminData = async () => {
@@ -52,7 +63,6 @@ export default function AdminDashboardPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // 1. Get the admin's agency_id to filter data
         const { data: adminProfile } = await supabase
           .from('profiles')
           .select('agency_id')
@@ -60,11 +70,9 @@ export default function AdminDashboardPage() {
           .single();
 
         if (!adminProfile) throw new Error("Admin profile not found");
-        setAgencyId(adminProfile.agency_id);
-
         const currentAgencyId = adminProfile.agency_id;
+        setAgencyId(currentAgencyId);
 
-        // 2. Fetch Metrics (Using 'head' method for counting without downloading data)
         const { count: activeShifts } = await supabase
           .from('shifts')
           .select('*', { count: 'exact', head: true })
@@ -89,7 +97,6 @@ export default function AdminDashboardPage() {
           pendingApprovalsCount: pendingApprovals || 0,
         });
 
-        // 3. Fetch Active Workers Table Data
         const { data: shiftsData } = await supabase
           .from('shifts')
           .select(`
@@ -119,6 +126,29 @@ export default function AdminDashboardPage() {
     fetchAdminData();
   }, []);
 
+  const handleWorkerSelect = (worker: ActiveWorker) => {
+    if (worker.clock_in_lat && worker.clock_in_lng) {
+      const name = worker.profiles ? `${worker.profiles.first_name} ${worker.profiles.last_name}` : 'Worker';
+      setSelectedLocation({ lat: worker.clock_in_lat, lng: worker.clock_in_lng, name });
+    } else {
+      alert("This worker hasn't provided GPS coordinates yet.");
+    }
+  };
+
+  // --- 3. METRIC CLICK HANDLER ---
+  const handleMetricClick = (type: 'active' | 'incidents' | 'approvals') => {
+    if (type === 'active') {
+      // Smooth scroll to the Active Workers table
+      document.getElementById('active-workers-table')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (type === 'incidents') {
+      // Navigate to the Compliance & Incidents page
+      router.push('/admin/compliance');
+    } else if (type === 'approvals') {
+      // Navigate to the Rostering page
+      router.push('/admin/rostering');
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loaderContainer}>
@@ -134,17 +164,15 @@ export default function AdminDashboardPage() {
   return (
     <div className={styles.dashboardContainer}>
       
-      {/* Header */}
       <div className={styles.header}>
         <h1>Control Tower</h1>
         <p>{todayStr}</p>
       </div>
 
-      {/* Metrics Row */}
       <div className={styles.metricsGrid}>
         
-        {/* Active Shifts Metric */}
-        <div className={styles.metricCard}>
+        {/* Active Shifts Metric - 4. Add onClick */}
+        <div className={styles.metricCard} onClick={() => handleMetricClick('active')}>
           <div className={styles.metricInfo}>
             <span className={styles.metricLabel}>Workers on Shift</span>
             <span className={styles.metricValue}>{metrics.activeShiftsCount}</span>
@@ -153,9 +181,9 @@ export default function AdminDashboardPage() {
             <Users size={24} />
           </div>
         </div>
-
-        {/* Pending Incidents Metric */}
-        <div className={styles.metricCard}>
+        
+        {/* Pending Incidents Metric - 4. Add onClick */}
+        <div className={styles.metricCard} onClick={() => handleMetricClick('incidents')}>
           <div className={styles.metricInfo}>
             <span className={styles.metricLabel}>Critical Incidents</span>
             <span className={styles.metricValue}>{metrics.pendingIncidentsCount}</span>
@@ -164,9 +192,9 @@ export default function AdminDashboardPage() {
             <AlertOctagon size={24} />
           </div>
         </div>
-
-        {/* Pending Approvals Metric */}
-        <div className={styles.metricCard}>
+        
+        {/* Pending Approvals Metric - 4. Add onClick */}
+        <div className={styles.metricCard} onClick={() => handleMetricClick('approvals')}>
           <div className={styles.metricInfo}>
             <span className={styles.metricLabel}>Pending Approvals</span>
             <span className={styles.metricValue}>{metrics.pendingApprovalsCount}</span>
@@ -177,16 +205,12 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Main Content Layout */}
       <div className={styles.mainGrid}>
         
-        {/* Left Column: Active Workers Table */}
-        <div className={styles.panel}>
+        {/* Left Column: Active Workers Table - 5. Add ID for scrolling */}
+        <div className={styles.panel} id="active-workers-table">
           <div className={styles.panelHeader}>
             <h2>Active Field Workers</h2>
-            <button className="btn-secondary" style={{ fontSize: '0.8rem', padding: '6px 12px' }}>
-              View All
-            </button>
           </div>
           
           <div className={styles.tableWrapper}>
@@ -229,8 +253,13 @@ export default function AdminDashboardPage() {
                         )}
                       </td>
                       <td>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-                          <MoreHorizontal size={18} />
+                        <button 
+                          className="btn-secondary"
+                          style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                          onClick={() => handleWorkerSelect(shift)}
+                          disabled={!shift.clock_in_lat}
+                        >
+                          Locate
                         </button>
                       </td>
                     </tr>
@@ -241,7 +270,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Right Column: Mini Map Placeholder */}
+        {/* Right Column: Mini Map */}
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
             <h2>Live GPS Tracking</h2>
@@ -250,17 +279,29 @@ export default function AdminDashboardPage() {
             height: '300px', 
             backgroundColor: '#F1F5F9', 
             borderRadius: 'var(--radius-sm)', 
+            overflow: 'hidden',
             display: 'flex', 
             flexDirection: 'column',
             justifyContent: 'center', 
             alignItems: 'center',
-            color: 'var(--text-muted)',
-            border: '1px dashed var(--border-color)'
+            border: '1px solid var(--border-color)',
+            position: 'relative'
           }}>
-            <MapPin size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
-            <p style={{ fontSize: '0.9rem', textAlign: 'center', padding: '0 24px' }}>
-              Select a worker from the table to view their exact clock-in coordinates on the map.
-            </p>
+            {selectedLocation ? (
+              <>
+                <MapComponent lat={selectedLocation.lat} lng={selectedLocation.lng} />
+                <div style={{ position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'white', padding: '6px 12px', borderRadius: '4px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', fontSize: '0.8rem', zIndex: 1000, fontWeight: 600 }}>
+                  Showing: {selectedLocation.name}
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--text-muted)' }}>
+                <MapPin size={32} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                <p style={{ fontSize: '0.9rem', textAlign: 'center', padding: '0 24px' }}>
+                  Click ``Locate´´ on an active worker to view their exact coordinates.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
