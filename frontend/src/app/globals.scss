@@ -88,6 +88,11 @@ a {
   &:hover {
     background-color: var(--color-primary-hover);
   }
+  &.staff{
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px;
+}
 }
 
 .btn-secondary {

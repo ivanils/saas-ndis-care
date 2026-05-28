@@ -228,8 +228,8 @@ export default function StaffPage() {
           <h1>Staff Directory</h1>
           <p>Manage your team and track compliance requirements.</p>
         </div>
-        <button className="btn-primary" onClick={() => setIsInviteModalOpen(true)}>
-          <Plus size={18} /> Invite Staff
+        <button className="btn-primary staff" onClick={() => setIsInviteModalOpen(true)}>
+          <Plus size={18} /> <span>Invite Staff</span>
         </button>
       </div>
 

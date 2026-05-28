@@ -1,8 +1,5 @@
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone text;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS email text;
+ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'super_admin';
 
 UPDATE public.profiles 
-SET 
-  phone = '0412 345 ' || floor(random() * 900 + 100)::text, 
-  email = lower(first_name || '.' || last_name || '@bellvi.com') 
-WHERE role = 'worker';
+SET role = 'super_admin'::user_role 
+WHERE id = '9952cca4-6a04-467e-bf29-9802d6dfee74'::uuid;
