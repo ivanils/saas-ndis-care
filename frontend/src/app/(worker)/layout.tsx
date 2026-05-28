@@ -1,7 +1,7 @@
 // src/app/(app)/layout.tsx
 import React from 'react';
-import Sidebar from '../components/Sidebar';
-import TopHeader from '../components/TopHeader';
+import Sidebar from '../../components/Sidebar';
+import TopHeader from '../../components/TopHeader';
 import styles from './layout.module.scss'; 
 import { Toaster } from 'react-hot-toast';
 

@@ -1,7 +1,7 @@
 // src/app/(app)/dashboard/page.tsx
-import ScheduleCard from '../../components/ScheduleCard';
-import ActiveShiftCard from '../../components/ActiveShiftCard';
-import PendingActionsCard from '../../components/PendingActionsCard';
+import ScheduleCard from '../../../components/ScheduleCard';
+import ActiveShiftCard from '../../../components/ActiveShiftCard';
+import PendingActionsCard from '../../../components/PendingActionsCard';
 import styles from './page.module.scss';
 
 export default function DashboardPage() {
