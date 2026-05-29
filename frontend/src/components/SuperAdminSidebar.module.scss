@@ -2,7 +2,8 @@
 
 .sidebar {
   width: 260px;
-  background-color: #0F172A; 
+  background-color: #2e2e2e;
+  color: #F8FAFC;
   height: 100vh;
   position: fixed;
   top: 0;
@@ -10,8 +11,9 @@
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
-  border-right: 1px solid #1E293B;
+  border-right: 1px solid #000000;
   z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logoContainer {
@@ -37,7 +39,16 @@
   gap: 8px;
   flex: 1;
 }
-
+.superAdminBadge {
+  background-color: #1eaf5f; 
+  color: #DBEAFE; 
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-left: 4px;
+}
 .navItem {
   display: flex;
   align-items: center;
@@ -51,13 +62,13 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #1E293B;
+    background-color: #3b261e;
     color: #F8FAFC;
   }
 
   &.active {
-    background-color: #38BDF8;
-    color: #0F172A;
+    background-color: #fc8814;
+    color: #ffffff;
     font-weight: 600;
   }
 }
@@ -69,7 +80,7 @@
   padding: 12px 16px;
   background: none;
   border: none;
-  color: #EF4444;
+  color: #ffffff;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -79,6 +90,66 @@
   text-align: left;
 
   &:hover {
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: rgba(0, 0, 0, 0.4);
   }
+}
+
+/* --- MOBILE TOGGLE ELEMENTS (Hidden on Desktop) --- */
+.mobileToggleBtn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background-color: #38BDF8;
+  color: #0F172A;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+  z-index: 110;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background-color 0.2s;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.mobileOverlay {
+  display: none;
+}
+
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%); 
+    width: 280px;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mobileToggleBtn {
+    display: flex;
+  }
+
+  .mobileOverlay {
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 90;
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

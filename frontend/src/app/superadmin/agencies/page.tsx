@@ -186,7 +186,7 @@ export default function AgenciesPage() {
           <h1>Manage Agencies</h1>
           <p>View and register new tenant clinics in the platform.</p>
         </div>
-        <button className="btn-primary" onClick={() => setIsCreateModalOpen(true)}>
+        <button className="btn-primary staff" onClick={() => setIsCreateModalOpen(true)}>
           <Plus size={18} /> Onboard Agency
         </button>
       </div>

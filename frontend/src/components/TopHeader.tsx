@@ -21,19 +21,20 @@ export default function TopHeader() {
     const [userName, setUserName] = useState('Jane Doe');
     const [showNotifications, setShowNotifications] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
+    const [userRole, setUserRole] = useState('worker')
     useEffect(() => {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('first_name, last_name, avatar_url')
+                    .select('first_name, last_name, avatar_url, role')
                     .eq('id', user.id)
                     .single();
 
                 if (profile) {
                     if (profile.first_name) setUserName(`${profile.first_name} ${profile.last_name || ''}`);
+                    if (profile.role) setUserRole(profile.role);
                     if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
                 } else if (user.user_metadata?.first_name) {
                     setUserName(`${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`);
@@ -42,7 +43,17 @@ export default function TopHeader() {
         };
         fetchUser();
     }, []);
-
+    const getSettingsPath = (role: string | null) => {
+        switch (role) {
+            case 'super_admin':
+                return '/superadmin/settings';
+            case 'admin':
+                return '/admin/settings';
+            case 'worker':
+            default:
+                return '/settings';
+        }
+    };
     return (
         <header className={styles.headerContainer}>
             <div className={styles.greetingInfo}>
@@ -68,7 +79,7 @@ export default function TopHeader() {
                     )}
                 </div>
 
-                <Link href="/settings" className={styles.avatarWrapper} title="Go to Settings">
+                <Link href={getSettingsPath(userRole)} className={styles.avatarWrapper} title="Go to Settings">
                     <Image
                         src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=f98866&color=fff`}
                         alt={`${userName}'s avatar`}
