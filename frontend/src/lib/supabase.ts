@@ -1,5 +1,5 @@
 // frontend/src/lib/supabase.ts
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 // Retrieve environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -10,5 +10,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Check your .env.local file.');
 }
 
-// Initialize and export the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize and export the Supabase SSR browser client
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
