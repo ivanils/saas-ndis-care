@@ -1,3 +1,6 @@
-UPDATE public.profiles 
-SET role = 'super_admin'::user_role 
-WHERE id = '9952cca4-6a04-467e-bf29-9802d6dfee74'::uuid;
+create table if not exists worker_participants (
+  worker_id uuid references public.profiles(id) on delete cascade,
+  participant_id uuid references public.participants(id) on delete cascade,
+  assigned_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  primary key (worker_id, participant_id)
+);
