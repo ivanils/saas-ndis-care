@@ -26,12 +26,12 @@ export default function SuperAdminSidebar() {
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logoContainer}>
+      <Link className={styles.logoContainer} href="/superadmin/dashboard">
         <div className={styles.logoIcon}>
           <Building2 size={28} color="#38BDF8" />
         </div>
         <h2>Bellvi SaaS</h2>
-      </div>
+      </Link>
 
       <nav className={styles.navMenu}>
         {navItems.map((item) => (

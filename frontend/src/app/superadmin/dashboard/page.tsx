@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Building2, Users, Activity } from 'lucide-react';
 import styles from './page.module.scss';
@@ -20,38 +21,48 @@ interface AgencyRecord {
   created_at: string;
 }
 
+interface UserRecord {
+  id: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+}
+
+interface ShiftRecord {
+  id: string;
+  status: string;
+  created_at: string;
+}
+
 export default function SuperAdminDashboardPage() {
   const [loading, setLoading] = useState(true);
+  
   const [metrics, setMetrics] = useState<PlatformMetrics>({
     totalAgencies: 0,
     totalUsers: 0,
     totalActiveShifts: 0,
   });
+  
   const [recentAgencies, setRecentAgencies] = useState<AgencyRecord[]>([]);
+  const [recentUsers, setRecentUsers] = useState<UserRecord[]>([]);
+  const [activeShiftsList, setActiveShiftsList] = useState<ShiftRecord[]>([]);
 
-  // Fetch all global platform data without agency filters
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'agencies' | 'users' | 'shifts' | null>(null);
+
+  // Fetch all global platform data
   const fetchPlatformData = useCallback(async () => {
     try {
-      // 1. Fetch total agencies count
-      const { count: agenciesCount, error: agenciesError } = await supabase
-        .from('agencies')
-        .select('*', { count: 'exact', head: true });
-      
+      const { count: agenciesCount, error: agenciesError } = await supabase.from('agencies').select('*', { count: 'exact', head: true });
+      const { data: latestAgencies } = await supabase.from('agencies').select('id, name, created_at').order('created_at', { ascending: false }).limit(5);
       if (agenciesError) throw agenciesError;
 
-      // 2. Fetch total profiles count
-      const { count: usersCount, error: usersError } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
+      const { count: usersCount, error: usersError } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+      const { data: latestUsers } = await supabase.from('profiles').select('id, first_name, last_name, role').order('created_at', { ascending: false }).limit(5);
       if (usersError) throw usersError;
 
-      // 3. Fetch total active shifts across ALL agencies
-      const { count: activeShiftsCount, error: shiftsError } = await supabase
-        .from('shifts')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'in_progress');
-
+      const { count: activeShiftsCount, error: shiftsError } = await supabase.from('shifts').select('*', { count: 'exact', head: true }).eq('status', 'in_progress');
+      const { data: latestShifts } = await supabase.from('shifts').select('id, status, created_at').eq('status', 'in_progress').order('created_at', { ascending: false }).limit(5);
       if (shiftsError) throw shiftsError;
 
       setMetrics({
@@ -60,16 +71,9 @@ export default function SuperAdminDashboardPage() {
         totalActiveShifts: activeShiftsCount || 0,
       });
 
-      // 4. Fetch the most recent agencies onboarded
-      const { data: recentAgenciesData, error: recentAgenciesError } = await supabase
-        .from('agencies')
-        .select('id, name, created_at')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (recentAgenciesError) throw recentAgenciesError;
-      
-      setRecentAgencies(recentAgenciesData as AgencyRecord[]);
+      setRecentAgencies((latestAgencies as AgencyRecord[]) || []);
+      setRecentUsers((latestUsers as UserRecord[]) || []);
+      setActiveShiftsList((latestShifts as ShiftRecord[]) || []);
 
     } catch (error) {
       console.error('Error fetching platform data:', error);
@@ -85,6 +89,10 @@ export default function SuperAdminDashboardPage() {
     };
     initData();
   }, [fetchPlatformData]);
+
+  const toggleTab = (tabId: 'agencies' | 'users' | 'shifts') => {
+    setActiveTab(prev => prev === tabId ? null : tabId);
+  };
 
   if (loading) {
     return (
@@ -104,8 +112,11 @@ export default function SuperAdminDashboardPage() {
 
       <div className={styles.metricsGrid}>
         
-        {/* Total Agencies Metric */}
-        <div className={styles.metricCard}>
+        {/* TOTAL AGENCIES CARD */}
+        <div 
+          className={`${styles.metricCard} ${activeTab === 'agencies' ? styles.activeCard : ''}`} 
+          onClick={() => toggleTab('agencies')}
+        >
           <div className={styles.metricInfo}>
             <span className={styles.metricLabel}>Total Agencies</span>
             <span className={styles.metricValue}>{metrics.totalAgencies}</span>
@@ -115,8 +126,11 @@ export default function SuperAdminDashboardPage() {
           </div>
         </div>
 
-        {/* Total Users Metric */}
-        <div className={styles.metricCard}>
+        {/* TOTAL USERS CARD */}
+        <div 
+          className={`${styles.metricCard} ${activeTab === 'users' ? styles.activeCard : ''}`} 
+          onClick={() => toggleTab('users')}
+        >
           <div className={styles.metricInfo}>
             <span className={styles.metricLabel}>Total Registered Users</span>
             <span className={styles.metricValue}>{metrics.totalUsers}</span>
@@ -126,8 +140,11 @@ export default function SuperAdminDashboardPage() {
           </div>
         </div>
 
-        {/* Global Active Shifts Metric */}
-        <div className={styles.metricCard}>
+        {/* GLOBAL ACTIVE SHIFTS CARD */}
+        <div 
+          className={`${styles.metricCard} ${activeTab === 'shifts' ? styles.activeCard : ''}`} 
+          onClick={() => toggleTab('shifts')}
+        >
           <div className={styles.metricInfo}>
             <span className={styles.metricLabel}>Global Active Shifts</span>
             <span className={styles.metricValue}>{metrics.totalActiveShifts}</span>
@@ -136,8 +153,70 @@ export default function SuperAdminDashboardPage() {
             <Activity size={24} />
           </div>
         </div>
+
       </div>
 
+      {/* --- DYNAMIC TAB CONTENT SECTION --- */}
+      {activeTab && (
+        <div className={styles.tabContentSection}>
+          <div className={styles.tabContentHeader}>
+            <h3>
+              {activeTab === 'agencies' && 'Recently Onboarded Agencies'}
+              {activeTab === 'users' && 'Newest Registered Users'}
+              {activeTab === 'shifts' && 'Currently Active Shifts'}
+            </h3>
+            <Link
+              className={styles.tabActionBtn}
+              href={
+                activeTab === 'agencies'
+                  ? '/superadmin/agencies'
+                  : activeTab === 'users'
+                  ? '/superadmin/users'
+                  : '/superadmin/logs'
+              }
+            >
+              {activeTab === 'agencies' && 'Manage Agencies →'}
+              {activeTab === 'users' && 'View All Users →'}
+              {activeTab === 'shifts' && 'System Logs →'}
+            </Link>
+          </div>
+
+          <div className={styles.tabList}>
+            
+            {activeTab === 'agencies' && recentAgencies.map(agency => (
+              <div key={agency.id} className={styles.tabListItem}>
+                <span className={styles.itemName}>{agency.name}</span>
+                <span className={styles.itemMeta}>{new Date(agency.created_at).toLocaleDateString()}</span>
+              </div>
+            ))}
+
+            {activeTab === 'users' && recentUsers.map(user => (
+              <div key={user.id} className={styles.tabListItem}>
+                <span className={styles.itemName}>{user.first_name} {user.last_name}</span>
+                <span className={styles.itemMeta}>{user.role.replace('_', ' ')}</span>
+              </div>
+            ))}
+
+            {activeTab === 'shifts' && (
+              activeShiftsList.length === 0 ? (
+                <div className={`${styles.tabListItem} ${styles.emptyTabState}`}>
+                  <span className={styles.itemMeta}>No shifts currently in progress across all agencies.</span>
+                </div>
+              ) : (
+                activeShiftsList.map(shift => (
+                  <div key={shift.id} className={styles.tabListItem}>
+                    <span className={styles.itemName}>Shift In Progress</span>
+                    <span className={styles.itemMeta} style={{ color: '#166534', fontWeight: 600 }}>Active</span>
+                  </div>
+                ))
+              )
+            )}
+            
+          </div>
+        </div>
+      )}
+
+      {/* RECENT AGENCIES TABLE PANEL (Main persistent data view) */}
       <div className={styles.panel}>
         <div className={styles.panelHeader}>
           <h2>Recently Onboarded Agencies</h2>
