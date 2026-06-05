@@ -1,7 +1,7 @@
 // src/app/admin/rostering/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { 
@@ -15,8 +15,8 @@ interface ShiftRecord {
   start_time: string;
   end_time: string;
   status: string;
-  profiles: { first_name: string; last_name: string } | null;
-  participants: { first_name: string; last_name: string } | null;
+  worker_id: string; 
+  participant_id: string;
 }
 
 interface WorkerProfile {
@@ -31,16 +31,16 @@ interface ParticipantRecord {
   last_name: string;
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const generateTimeOptions = () => {
   const options = [];
   for (let h = 0; h < 24; h++) {
     for (let m = 0; m < 60; m += 5) {
       const value = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-      
       const ampm = h >= 12 ? 'PM' : 'AM';
       const displayHour = h % 12 === 0 ? 12 : h % 12;
-      const label = `${displayHour}:${m.toString().padStart(2, '0')} ${ampm}`;
-      
+      const label = `${displayHour === 0 ? 12 : displayHour}:${m.toString().padStart(2, '0')} ${ampm}`;
       options.push({ value, label });
     }
   }
@@ -48,10 +48,8 @@ const generateTimeOptions = () => {
 };
 const timeOptions = generateTimeOptions();
 
-
 export default function RosteringPage() {
   const [loading, setLoading] = useState(true);
-  const [agencyId, setAgencyId] = useState<string | null>(null);
   
   const [shifts, setShifts] = useState<ShiftRecord[]>([]);
   const [workers, setWorkers] = useState<WorkerProfile[]>([]);
@@ -71,106 +69,89 @@ export default function RosteringPage() {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
-  useEffect(() => {
-    const fetchRosteringData = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+  // --- HELPER: GET TOKEN ---
+  const getAuthToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
+  };
 
-        const { data: adminProfile } = await supabase
-          .from('profiles')
-          .select('agency_id')
-          .eq('id', user.id)
-          .single();
+  const fetchRosteringData = useCallback(async () => {
+    try {
+      const token = await getAuthToken();
+      if (!token) throw new Error("No auth token");
 
-        if (!adminProfile) throw new Error("Admin profile not found");
-        const currentAgencyId = adminProfile.agency_id;
-        setAgencyId(currentAgencyId);
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
 
-        const { data: shiftsData, error: shiftsError } = await supabase
-          .from('shifts')
-          .select(`
-            id, start_time, end_time, status,
-            profiles (first_name, last_name),
-            participants (first_name, last_name)
-          `)
-          .eq('agency_id', currentAgencyId)
-          .order('start_time', { ascending: false });
+      const [shiftsRes, workersRes, participantsRes] = await Promise.all([
+        fetch(`${BACKEND_URL}/shifts/`, { headers }),
+        fetch(`${BACKEND_URL}/profiles/`, { headers }), 
+        fetch(`${BACKEND_URL}/participants/`, { headers })
+      ]);
 
-        if (shiftsError) throw shiftsError;
-        setShifts(shiftsData as unknown as ShiftRecord[]);
-
-        const { data: workersData } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name')
-          .eq('agency_id', currentAgencyId)
-          .eq('role', 'worker');
-
-        setWorkers(workersData || []);
-
-        const { data: participantsData } = await supabase
-          .from('participants')
-          .select('id, first_name, last_name')
-          .eq('agency_id', currentAgencyId);
-
-        setParticipants(participantsData || []);
-
-      } catch (error) {
-        console.error('Error fetching rostering data:', error);
-        toast.error('Failed to load scheduling data.');
-      } finally {
-        setLoading(false);
+      if (!shiftsRes.ok || !workersRes.ok || !participantsRes.ok) {
+        throw new Error('Failed to fetch data from backend');
       }
-    };
 
-    fetchRosteringData();
+      const shiftsData = await shiftsRes.json();
+      const workersData = await workersRes.json();
+      const participantsData = await participantsRes.json();
+
+      const sortedShifts = shiftsData.sort((a: { start_time: string }, b: { start_time: string }) => 
+        new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+      );
+
+      setShifts(sortedShifts);
+      setWorkers(workersData.filter((w: { role: string }) => w.role === 'worker') || []);
+      setParticipants(participantsData || []);
+
+    } catch (error) {
+      console.error('Error fetching rostering data:', error);
+      toast.error('Failed to load scheduling data.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      await fetchRosteringData();
+    };
+    init();
+  }, [fetchRosteringData]);
+
   const handleCreateShift = async () => {
-    if (!agencyId || !selectedWorker || !selectedParticipant || !shiftDate || !startTime || !endTime) {
-      toast.error('Please fill in all required fields.');
-      return;
+    if (!selectedWorker || !selectedParticipant || !shiftDate || !startTime || !endTime) {
+      return toast.error('Please fill in all required fields.');
     }
 
     setIsSubmitting(true);
-
     try {
+      const token = await getAuthToken();
       const startDateTime = new Date(`${shiftDate}T${startTime}`).toISOString();
       const endDateTime = new Date(`${shiftDate}T${endTime}`).toISOString();
 
-      const { data: newShift, error } = await supabase
-        .from('shifts')
-        .insert({
-          agency_id: agencyId,
+      const response = await fetch(`${BACKEND_URL}/shifts/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           worker_id: selectedWorker,
           participant_id: selectedParticipant,
           start_time: startDateTime,
           end_time: endDateTime,
-          status: 'scheduled'
+          status: 'assigned' 
         })
-        .select(`
-          id, start_time, end_time, status,
-          profiles (first_name, last_name),
-          participants (first_name, last_name)
-        `)
-        .single();
+      });
 
-      if (error) throw error;
-
-      if (newShift) {
-        setShifts((prev) => {
-          const updated = [newShift as unknown as ShiftRecord, ...prev];
-          return updated.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
-        });
-      }
-
+      if (!response.ok) throw new Error('Failed to create shift in backend');
+      
       toast.success('Shift successfully scheduled!');
-      setSelectedWorker('');
-      setSelectedParticipant('');
-      setShiftDate('');
-      setStartTime('');
-      setEndTime('');
+      setSelectedWorker(''); setSelectedParticipant(''); setShiftDate(''); setStartTime(''); setEndTime('');
       setIsModalOpen(false);
+      fetchRosteringData(); 
 
     } catch (error) {
       console.error('Error creating shift:', error);
@@ -183,12 +164,17 @@ export default function RosteringPage() {
   const handleApproveShift = async (shiftId: string) => {
     setApprovingId(shiftId);
     try {
-      const { error } = await supabase.from('shifts').update({ status: 'scheduled' }).eq('id', shiftId);
-      if (error) throw error;
-      setShifts((prev) => prev.map(shift => shift.id === shiftId ? { ...shift, status: 'scheduled' } : shift));
+      const token = await getAuthToken();
+      const response = await fetch(`${BACKEND_URL}/shifts/${shiftId}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'assigned' }) 
+      });
+      if (!response.ok) throw new Error('Failed to update shift');
+
+      setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: 'assigned' } : s));
       toast.success('Shift approved and scheduled!');
     } catch (error) {
-      console.error('Error approving shift:', error);
       toast.error('Failed to approve shift.');
     } finally {
       setApprovingId(null);
@@ -198,12 +184,17 @@ export default function RosteringPage() {
   const handleDisputeShift = async (shiftId: string) => {
     setDisputingId(shiftId);
     try {
-      const { error } = await supabase.from('shifts').update({ status: 'disputed' }).eq('id', shiftId);
-      if (error) throw error;
-      setShifts((prev) => prev.map(shift => shift.id === shiftId ? { ...shift, status: 'disputed' } : shift));
+      const token = await getAuthToken();
+      const response = await fetch(`${BACKEND_URL}/shifts/${shiftId}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'disputed' })
+      });
+      if (!response.ok) throw new Error('Failed to update shift');
+
+      setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: 'disputed' } : s));
       toast.success('Shift flagged as disputed.');
     } catch (error) {
-      console.error('Error disputing shift:', error);
       toast.error('Failed to flag shift as disputed.');
     } finally {
       setDisputingId(null);
@@ -214,18 +205,23 @@ export default function RosteringPage() {
     if (!window.confirm("Are you sure you want to cancel and delete this shift?")) return;
     setDeletingId(shiftId);
     try {
-      const { error } = await supabase.from('shifts').delete().eq('id', shiftId);
-      if (error) throw error;
-      setShifts((prev) => prev.filter(shift => shift.id !== shiftId));
+      const token = await getAuthToken();
+      const response = await fetch(`${BACKEND_URL}/shifts/${shiftId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to delete shift');
+
+      setShifts(prev => prev.filter(s => s.id !== shiftId));
       toast.success('Shift cancelled successfully.');
     } catch (error) {
-      console.error('Error deleting shift:', error);
       toast.error('Failed to cancel shift.');
     } finally {
       setDeletingId(null);
     }
   };
 
+  // --- HELPERS VISUALES ---
   const formatDateTime = (isoString: string) => {
     const date = new Date(isoString);
     return {
@@ -234,14 +230,24 @@ export default function RosteringPage() {
     };
   };
 
+  const getWorkerName = (id: string) => {
+    const w = workers.find(w => w.id === id);
+    return w ? `${w.first_name} ${w.last_name}` : 'Unknown Worker';
+  };
+  const getParticipantName = (id: string) => {
+    const p = participants.find(p => p.id === id);
+    return p ? `${p.first_name} ${p.last_name}` : 'Unknown Participant';
+  };
+
   const filteredShifts = shifts.filter(shift => {
     if (filter === 'all') return true;
+    if (filter === 'scheduled' && shift.status === 'assigned') return true; 
     return shift.status === filter;
   });
 
   if (loading) {
     return (
-      <div className={styles.loaderContainer}>
+      <div className={styles.loaderContainer} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
         <Loader2 className="animate-spin" size={32} color="var(--text-muted)" />
       </div>
     );
@@ -291,13 +297,13 @@ export default function RosteringPage() {
         ) : (
           filteredShifts.map((shift) => {
             const start = formatDateTime(shift.start_time);
-            const end = formatDateTime(shift.end_time);
+            const end = formatDateTime(shift.end_time || shift.start_time);
 
             return (
               <div key={shift.id} className={styles.shiftCard}>
                 
                 <div className={styles.shiftHeader}>
-                  <span className={`${styles.statusBadge} ${styles[shift.status]}`}>
+                  <span className={`${styles.statusBadge} ${styles[shift.status] || ''}`}>
                     {shift.status.replace('_', ' ')}
                   </span>
                   
@@ -346,13 +352,13 @@ export default function RosteringPage() {
                 <div className={styles.shiftDetailRow} style={{ marginTop: '20px' }}>
                   <User size={18} />
                   <span>
-                    Worker: <strong>{shift.profiles ? `${shift.profiles.first_name} ${shift.profiles.last_name}` : 'Unassigned'}</strong>
+                    Worker: <strong>{getWorkerName(shift.worker_id)}</strong>
                   </span>
                 </div>
                 <div className={styles.shiftDetailRow}>
                   <BriefcaseMedical size={18} />
                   <span>
-                    Participant: <strong>{shift.participants ? `${shift.participants.first_name} ${shift.participants.last_name}` : 'Unknown'}</strong>
+                    Participant: <strong>{getParticipantName(shift.participant_id)}</strong>
                   </span>
                 </div>
               </div>
