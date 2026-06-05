@@ -33,6 +33,11 @@ export default function AdminSidebar() {
       path: '/admin/compliance',
       icon: <ShieldAlert size={20} />,
     },
+    {
+      name: 'Settings',
+      path: '/admin/settings',
+      icon: <LayoutDashboard size={20} />,
+    }
   ];
 
   // Handle user logout and redirection
