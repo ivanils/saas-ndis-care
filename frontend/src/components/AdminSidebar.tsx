@@ -51,7 +51,8 @@ export default function AdminSidebar() {
     <aside className={styles.sidebarContainerAdmin}>
       
       {/* Brand Header */}
-      <div className={styles.brandHeader}>
+      
+      <Link className={styles.brandHeader} href="/admin/dashboard">
         <Image
           src="/bellvi_logo.png" 
           alt="Bellvi Logo" 
@@ -61,7 +62,7 @@ export default function AdminSidebar() {
         />
         <span className={styles.brandName}>Bellvi</span>
         <span className={styles.adminBadge}>Admin</span>
-      </div>
+      </Link>
 
       {/* Navigation Links */}
       <nav className={styles.navigation}>

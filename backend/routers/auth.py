@@ -16,7 +16,6 @@ def register_agency_and_admin(user_data: schemas.UserRegister):
         agency_id = new_agency["id"]
         
         # 2. Register the user in Supabase Auth
-        # We pass the agency_id and role inside the app_metadata -> dependencies.py
         auth_response = supabase.auth.sign_up({
             "email": user_data.email,
             "password": user_data.password,
