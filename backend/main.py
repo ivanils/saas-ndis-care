@@ -13,7 +13,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://saas-ndis-care.vercel.app/"
+        "https://saas-ndis-care.vercel.app"
     ], 
     allow_credentials=True,
     allow_methods=["*"],
@@ -39,3 +39,8 @@ def secure_test_endpoint(current_user: CurrentUser = Depends(get_current_user)):
         "message": "Welcome to the VIP area!",
         "your_badge": current_user
     }
+
+@app.api_route("/ping", methods=["GET", "HEAD"])
+def keep_alive():
+    """Render is awake."""
+    return {"status": "awake"}

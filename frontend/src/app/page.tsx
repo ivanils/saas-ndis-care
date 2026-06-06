@@ -3,8 +3,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import styles from './page.module.scss'; // Assuming styles stay here for the landing page
-
+import styles from './page.module.scss'; 
 export default function WelcomeScreen() {
   const router = useRouter();
 
