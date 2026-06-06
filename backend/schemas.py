@@ -1,5 +1,6 @@
 # backend/schemas.py
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
+from uuid import UUID
 from datetime import datetime
 from typing import Optional, List
 from enum import Enum
@@ -22,8 +23,8 @@ class ShiftStatus(str, Enum):
 # Schema for receiving data from Next.js (Create)
 
 class ShiftCreate(BaseModel):
-    worker_id: Optional[UUID4] = None # Optional, workers can't choose their worker_id.
-    participant_id: UUID4
+    worker_id: Optional[UUID] = None # Optional, workers can't choose their worker_id.
+    participant_id: UUID
     start_time: datetime
     end_time: Optional[datetime] = None
     status: ShiftStatus = ShiftStatus.assigned
@@ -41,10 +42,10 @@ class ShiftUpdate(BaseModel):
 
 # Schema for sending data back to Next.js (Read)
 class ShiftResponse(BaseModel):
-    id: UUID4
-    agency_id: UUID4
-    worker_id: UUID4
-    participant_id: UUID4
+    id: UUID
+    agency_id: UUID
+    worker_id: UUID
+    participant_id: UUID
     start_time: datetime
     end_time: Optional[datetime]
     status: ShiftStatus
@@ -59,18 +60,18 @@ class ShiftResponse(BaseModel):
 
 # --- CARE NOTES SCHEMAS ---
 class CareNoteCreate(BaseModel):
-    participant_id: UUID4
-    shift_id: Optional[UUID4] = None
+    participant_id: UUID
+    shift_id: Optional[UUID] = None
     content: str
     media_urls: Optional[List[str]] = [] # Supabase storage URLs for any photos or files attached to the note
     signature_url: Optional[str] = None  #Patient or worker signature URL (if required for compliance)
 
 class CareNoteResponse(BaseModel):
-    id: UUID4
-    agency_id: UUID4
-    worker_id: UUID4
-    participant_id: UUID4
-    shift_id: Optional[UUID4]
+    id: UUID
+    agency_id: UUID
+    worker_id: UUID
+    participant_id: UUID
+    shift_id: Optional[UUID]
     content: str
     media_urls: Optional[List[str]]
     signature_url: Optional[str]
@@ -93,8 +94,8 @@ class UserLogin(BaseModel):
     
 # PROFILES SCHEMAS
 class ProfileResponse(BaseModel):
-    id: UUID4
-    agency_id: UUID4
+    id: UUID
+    agency_id: UUID
     role: str
     first_name: str
     last_name: str
@@ -121,8 +122,8 @@ class ParticipantCreate(BaseModel):
     avatar_url: Optional[str] = None
     
 class ParticipantResponse(BaseModel):
-    id: UUID4
-    agency_id: UUID4
+    id: UUID
+    agency_id: UUID
     first_name: str
     last_name: str
     ndis_id: Optional[str]
