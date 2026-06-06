@@ -33,8 +33,6 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         role = app_metadata.get("role")
 
         # --- PLAN B: EL FALLBACK ---
-        # Si el token viene vacío (por haber inyectado los datos a mano), 
-        # consultamos la tabla profiles como administrador.
         if not agency_id:
             print("[DEBUG] agency_id missing in token. Fetching directly from DB...")
             profile_response = supabase_admin.table("profiles").select("agency_id, role").eq("id", str(user.id)).execute()
@@ -59,10 +57,12 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             role=role or "worker"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"[DEBUG ERROR] Exception in get_current_user: {str(e)}")
+        print(f"\n[CRITICAL ERROR in get_current_user]: {str(e)}\n")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed or token expired.",
+            detail="System error during authentication.",
             headers={"WWW-Authenticate": "Bearer"},
         )
