@@ -94,7 +94,7 @@ export default function SuperAdminSidebar() {
 
         <button className={styles.logoutBtn} onClick={handleLogout}>
           <LogOut size={20} />
-          Sign Out
+          Log Out
         </button>
       </aside>
     </>
