@@ -1,25 +1,29 @@
 # backend/dependencies.py
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from database import supabase, supabase_admin
-from pydantic import BaseModel, UUID4
+from database import supabase
+from pydantic import BaseModel
+from uuid import UUID  # Standard type for maximum compatibility
 
 security = HTTPBearer()
 
 class CurrentUser(BaseModel):
-    id: UUID4
-    agency_id: UUID4
+    id: UUID
+    agency_id: UUID
     role: str
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> CurrentUser:
+    """
+    Validates the JWT token against Supabase.
+    Assumes the token contains 'agency_id' and 'role' in 'app_metadata'
+    via the Database Hook configured in Supabase.
+    """
     token = credentials.credentials
     
     try:
-        # 1. Ask Supabase to verify the token
+        # 1. Validate against Supabase Auth engine (cryptographically secure)
         user_response = supabase.auth.get_user(token)
         user = user_response.user
-
-        print(f"[DEBUG 2] Supabase validated the token! User ID: {user.id}")
 
         if not user:
             raise HTTPException(
@@ -27,42 +31,34 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
                 detail="Invalid authentication token",
             )
 
-        # 2. Extract claims from app_metadata
+        # 2. Extract claims from token payload
+        # If the Hook is properly configured, this will never fail.
         app_metadata = user.app_metadata or {}
         agency_id = app_metadata.get("agency_id")
         role = app_metadata.get("role")
 
-        # --- PLAN B: EL FALLBACK ---
-        if not agency_id:
-            print("[DEBUG] agency_id missing in token. Fetching directly from DB...")
-            profile_response = supabase_admin.table("profiles").select("agency_id, role").eq("id", str(user.id)).execute()
-            
-            if profile_response.data:
-                agency_id = profile_response.data[0].get("agency_id")
-                role = profile_response.data[0].get("role", "worker")
-                print(f"[DEBUG] Recovered from DB! Agency: {agency_id}")
-
-        # 3. Fail fast if STILL an orphan
-        if not agency_id:
-            print("[DEBUG ERROR] User genuinely has no agency_id. Blocking access.")
+        # 3. Business integrity validation
+        if not agency_id or not role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="User does not belong to any agency. Access denied.",
+                detail="User claims missing in token. Contact admin.",
             )
 
-        # 4. Return context
+        # 4. Return CurrentUser object (Pydantic will validate types automatically)
         return CurrentUser(
             id=user.id,
             agency_id=agency_id,
-            role=role or "worker"
+            role=role
         )
 
     except HTTPException:
+        # Re-raise known 401/403 errors
         raise
     except Exception as e:
-        print(f"\n[CRITICAL ERROR in get_current_user]: {str(e)}\n")
+        # Generic error for internal failure or expired/malformed token
+        print(f"[CRITICAL ERROR in get_current_user]: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="System error during authentication.",
+            detail="Authentication failed or token expired.",
             headers={"WWW-Authenticate": "Bearer"},
         )
