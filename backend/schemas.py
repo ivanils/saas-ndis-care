@@ -126,9 +126,9 @@ class ParticipantResponse(BaseModel):
     agency_id: UUID
     first_name: str
     last_name: str
-    ndis_id: Optional[str]
-    emergency_contact: str
-    medical_alerts: Optional[str]
+    ndis_id: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    medical_alerts: Optional[str] = None
     avatar_url: Optional[str] = None
     created_at: datetime
 
