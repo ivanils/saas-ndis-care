@@ -1,7 +1,7 @@
 # backend/dependencies.py
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from database import supabase
+from database import supabase_admin
 from pydantic import BaseModel
 from uuid import UUID  # Standard type for maximum compatibility
 
@@ -22,7 +22,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     
     try:
         # 1. Validate against Supabase Auth engine (cryptographically secure)
-        user_response = supabase.auth.get_user(token)
+        user_response = supabase_admin.auth.get_user(token)
         user = user_response.user
 
         if not user:
