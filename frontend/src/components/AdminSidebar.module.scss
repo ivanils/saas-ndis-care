@@ -132,7 +132,7 @@
   }
 
   .navigation {
-    flex: 1;
+    flex: 5;
     width: auto;
   }
 
@@ -140,6 +140,12 @@
     flex-direction: row;
     justify-content: space-around;
     gap: 0;
+
+    li {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
   }
 
   .navItem {
@@ -148,6 +154,7 @@
     padding: 8px 4px;
     font-size: 0.7rem;
     justify-content: center;
+    align-items: center;
     flex: 1;
     text-align: center;
     border-left: none;
@@ -174,7 +181,10 @@
   }
 
   .footer {
+    flex: 1;
     display: flex;
+    justify-content: center;
+    align-items: stretch;
     margin-top: 0;
     padding-top: 0;
     border-top: none;
@@ -185,7 +195,9 @@
     gap: 4px;
     padding: 8px 4px;
     font-size: 0.7rem;
-    width: auto;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
       background-color: transparent;
