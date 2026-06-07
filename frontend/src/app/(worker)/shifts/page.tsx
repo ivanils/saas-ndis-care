@@ -536,15 +536,16 @@ export default function MyShiftsPage() {
               <div className={styles.sectionBlock}>
                 <h3 className={styles.sectionTitle}>Section 2: Quick Actions</h3>
                 <div>
-                  <button
-                    className={styles.btnPrimaryFull}
-                    onClick={() => {
-                      handleGenericAction(selectedShift.status === 'in_progress' ? 'Clock-Out' : 'Start Shift');
-                      closeModal();
-                    }}
-                  >
-                    {selectedShift.status === 'in_progress' ? 'Clock-Out' : 'Start Shift'}
-                  </button>
+                  {selectedShift.status === 'in_progress' && (
+                    <button className={styles.btnPrimaryFull} onClick={() => { handleGenericAction('Clock-Out'); closeModal(); }}>
+                      Clock-Out
+                    </button>
+                  )}
+                  {(selectedShift.status === 'assigned' || selectedShift.status === 'approved') && !isShiftPast(selectedShift) && (
+                    <button className={styles.btnPrimaryFull} onClick={() => { handleGenericAction('Start Shift'); closeModal(); }}>
+                      Start Shift
+                    </button>
+                  )}
                   <div className={styles.btnGroupHalf}>
                     <button
                       className={styles.btnOutlineHalf}
