@@ -183,6 +183,30 @@
     background-color: #FEF3C7;
     color: #B45309;
   }
+   &.approved {
+    background-color: var(--status-approved-bg);
+    color: var(--status-approved-text);
+  }
+  &.in-progress {
+    background-color: var(--status-in-progress-bg);
+    color: var(--status-in-progress-text);
+  }
+  &.alert {
+    background-color: var(--status-alert-bg);
+    color: var(--status-alert-text);
+  }
+  &.assigned {
+    background-color: var(--status-assigned-bg);
+    color: var(--status-assigned-text);
+  }
+  &.cancelled {
+    background-color: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+  }
+  &.completed {
+    background-color: var(--status-completed-bg);
+    color: var(--status-completed-text);
+  }
 }
 
 .actionCol {
