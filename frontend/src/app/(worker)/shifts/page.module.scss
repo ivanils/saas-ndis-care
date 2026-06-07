@@ -192,8 +192,8 @@
     color: var(--status-in-progress-text);
   }
   &.in_progress {
-    background-color: #DBEAFE;
-    color: #1E40AF;
+   background-color: var(--status-in-progress-bg);
+    color: var(--status-in-progress-text);
   }
   &.alert {
     background-color: var(--status-alert-bg);
