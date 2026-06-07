@@ -285,7 +285,7 @@ export default function MyShiftsPage() {
               const participantName = shift.participants ? `${shift.participants.first_name} ${shift.participants.last_name}` : 'Unknown Participant';
 
               return (
-                <div key={shift.id} className={styles.listRow}>
+                <div key={shift.id} className={styles.listRow} onClick={() => handleViewDetails(shift)} style={{ cursor: 'pointer' }}>
                   <div className={styles.dateCol}>
                     <span className={styles.relativeDay}>{getRelativeDateString(shift.start_time)}</span>
                     <span className={styles.timeRange}>{formatTime(shift.start_time)} - {formatTime(shift.end_time)}</span>
@@ -298,9 +298,9 @@ export default function MyShiftsPage() {
                     <span className={`${styles.badge} ${mappedStatus.className}`}>{mappedStatus.label}</span>
                   </div>
                   <div className={styles.actionCol}>
-                    {mappedStatus.label === 'Completed' && <button className={styles.outlineBtn} onClick={() => handleViewCareNote(shift)}>View Care Note</button>}
+                    {mappedStatus.label === 'Completed' && <button className={styles.outlineBtn} onClick={(e) => { e.stopPropagation(); handleViewCareNote(shift); }}>View Care Note</button>}
                     {mappedStatus.label === 'Pending Approval' && <span className={styles.actionText}>Awaiting Admin Review</span>}
-                    {mappedStatus.label === 'Assigned' && <button className={styles.outlineBtn} onClick={() => handleViewDetails(shift)}>View Details</button>}
+                    {mappedStatus.label === 'Assigned' && <button className={styles.outlineBtn} onClick={(e) => { e.stopPropagation(); handleViewDetails(shift); }}>View Details</button>}
                   </div>
                 </div>
               );
@@ -395,8 +395,11 @@ export default function MyShiftsPage() {
                           <div className={styles.timeRow}><MapPin size={14} /> Participant Residence</div>
 
                           <div className={styles.drawerActions}>
+                            <button className={styles.actionBtnSmall} onClick={() => { closeDrawer(); handleViewDetails(shift); }}>
+                              <User size={14} /> View Plan
+                            </button>
                             {mappedStatus.label === 'Completed' && (
-                              <button className={styles.actionBtnSmall} onClick={() => handleViewCareNote(shift)}>
+                              <button className={styles.actionBtnSmall} onClick={() => { closeDrawer(); handleViewCareNote(shift); }}>
                                 <FileText size={14} /> Read Note
                               </button>
                             )}
@@ -406,13 +409,8 @@ export default function MyShiftsPage() {
                                 <button className={`${styles.actionBtnSmall} ${styles.danger}`} onClick={() => handleGenericAction('Decline Shift')}><X size={14} /> Decline</button>
                               </>
                             )}
-                            {mappedStatus.label === 'Assigned' && (
-                              <>
-                                {isToday && (
-                                  <button className={`${styles.actionBtnSmall} ${styles.primary}`} onClick={() => handleGenericAction('Start Shift')}><PlayCircle size={14} /> Start Shift</button>
-                                )}
-                                <button className={styles.actionBtnSmall} onClick={() => handleViewDetails(shift)}><User size={14} /> View Plan</button>
-                              </>
+                            {mappedStatus.label === 'Assigned' && isToday && (
+                              <button className={`${styles.actionBtnSmall} ${styles.primary}`} onClick={() => handleGenericAction('Start Shift')}><PlayCircle size={14} /> Start Shift</button>
                             )}
                           </div>
                         </div>

@@ -178,6 +178,9 @@
 .drawerHeader {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 24px;
+  img{
+    border-radius: 50%;
+  }
 }
 
 .closeBtn {
