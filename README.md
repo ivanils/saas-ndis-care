@@ -1,41 +1,208 @@
-# 🏥 Bellvi | NDIS Care Management SaaS (MVP)
+# Bellvi — NDIS Care Management Platform
 
-> ⚠️ **Project Status: Active Development** > *The Worker and Admin/Coordinator Portals are successfully completed. Active development has now shifted to Next.js Middleware security, authentication, and Role-based Routing.*
+[![Live Demo](https://img.shields.io/badge/Live_Demo-bellvi.ivanllanos.com-FF6B6B?style=for-the-badge&logo=vercel&logoColor=white)](https://bellvi.ivanllanos.com/)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 
-A B2B Multi-tenant SaaS platform tailored for Australian Disability Support and Home Care agencies. Bellvi ensures strict compliance with NDIS (National Disability Insurance Scheme) data isolation, audit requirements, and seamless shift management.
+> End-to-end care operations platform built for NDIS providers — from shift rostering and GPS-verified clock-ins to clinical documentation and compliance reporting.
 
-## 🏗️ System Architecture
+---
 
-This project is structured as a modern web application utilizing a serverless architecture:
+## Live Demo
 
-* **Frontend:** React (Next.js 14+ with App Router)
-* **Styling:** CSS Modules (SCSS) + Tailwind-inspired utility classes
-* **Backend as a Service (BaaS):** Supabase (PostgreSQL, Auth, Storage)
-* **Data Fetching:** Direct Supabase Client Integration
+**URL:** [https://bellvi.ivanllanos.com](https://bellvi.ivanllanos.com/)
 
-## 🔐 Core Technical Decisions
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@bellvi.com | DemoBellvi2026! |
+| Worker | worker@bellvi.com | DemoBellvi2026! |
 
-* **Hardware-Level Multi-Tenancy:** Data isolation is enforced at the database engine level. Every core table (`profiles`, `participants`, `shifts`, `care_notes`) is bound by an `agency_id`, ensuring strict tenant data separation.
-* **Audit Trail Compliance:** Hard deletions (`DELETE`) are strictly prohibited for transactional medical records. The system utilizes a `deleted_at` column (Soft Deletes) to maintain an immutable history of shifts and care notes.
-* **File Storage:** Secure bucket handling via Supabase Storage for user avatars and medical documents.
-* **Role-Based Access Control (RBAC):** Users are assigned specific roles (`worker`, `admin`, or `super_admin`) which dictate UI rendering, data access, and tenant isolation scopes.
+> The Admin account gives access to the full rostering, staff, and compliance dashboards. The Worker account shows the shift calendar, participant profiles, and GPS clock-in flow.
 
-## 📍 Current Progress (MVP Roadmap)
+---
 
-- [x] **Phase 1:** System architecture, design tokens, and business logic definition.
-- [x] **Phase 2:** Database schema design, Multi-tenant structure, and Supabase initialization.
-- [x] **Phase 3:** Frontend UI Foundation (Sidebar, TopHeader, Global SCSS).
-- [x] **Phase 4:** **Worker Portal Implementation**
-  - [x] Live GPS Shift Clock-In / Clock-Out (`/dashboard`)
-  - [x] Shift Calendar & List views (`/my-shifts`)
-  - [x] Participant Medical Profiles & Slide-over Drawer (`/participants`)
-  - [x] Supabase Storage integration for Profile Pictures (`/settings`)
-  - [x] UX Polish (react-hot-toast notifications, responsive mobile design)
-- [x] **Phase 5:** **Admin / Coordinator Portal Implementation**
-  - [x] Admin Dashboard & Live Map (Real-time GPS tracking)
-  - [x] Rostering & Shift Assignment Engine
-  - [x] Staff Management & Live Compliance Tracking (Certifications)
-  - [x] Compliance & Incident Audit Trail
-  - [x] **Super Admin / Platform Owner Portal** (Global Metrics & Tenant Management)
-- [ ] **Phase 6:** Next.js Middleware Auth Protection & Role-based Routing. *(Currently in progress)*
-- [ ] **Phase 7:** Vercel Production Deployment.
+## What is Bellvi?
+
+Australia's NDIS sector supports over 600,000 participants, yet most disability support agencies still rely on paper timesheets, scattered messages, and spreadsheet rosters. Errors in documentation aren't just inefficient — they carry real compliance risk under NDIS Quality and Safeguarding requirements.
+
+Bellvi is a multi-tenant SaaS platform that consolidates everything into one system: workers clock in and out with GPS verification, care notes are logged against shifts in real time, and admins get a live overview of their entire field operation. Every record is timestamped, tamper-evident, and auditable — built from the ground up for NDIS compliance.
+
+---
+
+## Features
+
+### Worker Portal
+- **Live shift dashboard** — real-time status display (Assigned → In Progress → Completed → Pending Approval)
+- **GPS-verified clock-in / clock-out** — coordinates captured and stored per shift
+- **Calendar + list view** of all assigned shifts with participant details accessible on any status
+- **Participant profiles** — NDIS ID, medical alerts, emergency contacts
+- **Care note creation** — rich text notes linked to shifts, with attachment and signature support
+- **Profile management** — avatar upload via Supabase Storage
+
+### Admin Portal
+- **Live GPS map** — real-time field worker positions via Leaflet
+- **Rostering engine** — create and assign shifts to workers with time validation
+- **Staff management** — onboard workers, manage profiles and certifications
+- **Compliance dashboard** — shift audit trail, incident logs, approval workflow
+- **Real-time shift status overview** — approve, dispute, or escalate submissions
+
+### Super Admin Portal
+- **Global platform metrics** across all agencies
+- **Tenant management** — create and configure agencies
+- **Cross-agency user management**
+- **Platform-level audit logs**
+
+---
+
+## Architecture
+
+```
+Browser (Next.js / Vercel)
+    │
+    ├── /api/* (Next.js API Routes — service-role operations)
+    │
+    └── FastAPI (Python / Uvicorn)
+            │
+            └── Supabase
+                    ├── PostgreSQL  (data + RLS policies)
+                    ├── Auth        (JWT + session management)
+                    └── Storage     (avatars, medical documents)
+```
+
+### Multi-Tenancy
+
+Every core table carries an `agency_id` foreign key. PostgreSQL Row-Level Security (RLS) policies enforce agency boundaries at the database layer — even if application logic has a bug, cross-tenant data access is structurally impossible.
+
+```sql
+-- Workers only see shifts for their own agency
+CREATE POLICY "agency_isolation" ON shifts
+  FOR ALL USING (agency_id = (
+    SELECT agency_id FROM profiles WHERE id = auth.uid()
+  ));
+```
+
+All clinical records use **soft deletes** (`deleted_at` timestamp) instead of hard `DELETE` — preserving a complete audit trail as required by NDIS regulations.
+
+### Role-Based Access Control
+
+| Capability | Worker | Admin | Super Admin |
+|---|:---:|:---:|:---:|
+| View own shifts | ✓ | ✓ | ✓ |
+| View all agency shifts | — | ✓ | ✓ |
+| Clock in / out (GPS) | ✓ | ✓ | ✓ |
+| Approve / dispute shifts | — | ✓ | ✓ |
+| Create & assign shifts | — | ✓ | ✓ |
+| View participant profiles | ✓ | ✓ | ✓ |
+| Create care notes | ✓ | ✓ | ✓ |
+| Staff management | — | ✓ | ✓ |
+| Compliance dashboard | — | ✓ | ✓ |
+| Live GPS map | — | ✓ | ✓ |
+| Manage agencies | — | — | ✓ |
+| Platform audit logs | — | — | ✓ |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 15 (App Router), React, TypeScript |
+| Styling | CSS Modules (SCSS), custom design system |
+| Backend | FastAPI (Python 3.x), Uvicorn, Pydantic v2 |
+| Database | PostgreSQL via Supabase |
+| Authentication | Supabase Auth — JWT + SSR cookies (`@supabase/ssr`) |
+| Maps | Leaflet + react-leaflet |
+| File storage | Supabase Storage |
+| Deployment | Vercel (frontend) |
+
+---
+
+## Security
+
+- **JWT authentication** validated on every backend request via FastAPI dependency injection
+- **Row-Level Security** on all tables — multi-tenancy enforced at the database layer
+- **RBAC at three levels**: middleware (route protection), API route, and database policy
+- **Workers restricted** to safe shift status transitions only (`in_progress`, `completed`, `pending_approval`)
+- **GPS coordinate validation** — lat/lng bounds enforced in Pydantic (`ge=-90, le=90`)
+- **Soft deletes** on all clinical data — immutable audit trail for NDIS compliance
+- **Service Role Key** used server-side only — never sent to the browser
+- **CORS** restricted to known origins; `Content-Type` and `Authorization` headers only
+
+---
+
+## Local Setup
+
+### Prerequisites
+- Node.js 18+, npm
+- Python 3.10+, pip
+- A Supabase project with the schema applied
+
+### Frontend
+
+```bash
+cd frontend
+cp .env.local.example .env.local   # add your Supabase URL + keys
+npm install
+npm run dev                         # http://localhost:3000
+```
+
+### Backend
+
+```bash
+cd backend
+cp .env.example .env               # add your Supabase URL + service key
+pip install -r requirements.txt
+uvicorn main:app --reload           # http://localhost:8000
+```
+
+### Environment Variables
+
+**Frontend (`.env.local`):**
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+**Backend (`.env`):**
+```
+SUPABASE_URL=
+SUPABASE_KEY=
+```
+
+---
+
+## Project Structure
+
+```
+saas-ndis-care/
+├── frontend/                  # Next.js application
+│   └── src/
+│       ├── app/
+│       │   ├── (worker)/      # Worker portal — dashboard, shifts, participants, settings
+│       │   ├── admin/         # Admin portal — dashboard, rostering, staff, compliance
+│       │   ├── superadmin/    # Super admin portal
+│       │   ├── api/           # Next.js API routes (user management)
+│       │   ├── login/         # Auth page
+│       │   └── page.tsx       # Landing page
+│       ├── components/        # Shared components (sidebars, map, modals)
+│       ├── lib/               # Supabase client
+│       └── middleware.ts      # Route protection + RBAC redirects
+└── backend/                   # FastAPI application
+    ├── main.py
+    ├── schemas.py
+    ├── dependencies.py        # JWT validation + CurrentUser injection
+    └── routers/               # shifts, care_notes, participants, profiles, auth
+```
+
+---
+
+## Author
+
+Built by [Ivan Llanos](https://ivanllanos.com) — Full Stack Developer.
+
+For questions, demos, or partnership enquiries: [ivan.llanos.santamaria@gmail.com](mailto:ivan.llanos.santamaria@gmail.com)
