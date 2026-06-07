@@ -175,3 +175,51 @@
   align-items: center;
   height: 50vh;
 }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboardContainer {
+    padding: 16px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+
+    h1 { font-size: 1.4rem; }
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .metricCard {
+    padding: 16px;
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      border-color: var(--border-color);
+    }
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .panelHeader {
+    margin-bottom: 16px;
+  }
+
+  .dataTable {
+    th { padding: 10px 8px; }
+    td { padding: 10px 8px; font-size: 0.85rem; }
+  }
+}

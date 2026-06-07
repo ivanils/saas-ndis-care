@@ -191,11 +191,8 @@
   /* Slate 400 */
   cursor: not-allowed;
   padding-right: 48px;
-  /* Room for the lock icon */
-
   &:focus {
     border-color: var(--border-color);
-    /* Prevents orange focus on disabled */
   }
 }
 

@@ -1,11 +1,7 @@
 # backend/main.py
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import auth, shifts, care_notes, participants, profiles
-
-# Import our database and security tools
-from database import supabase
-from dependencies import get_current_user, CurrentUser
 
 app = FastAPI(title="NDIS Care SaaS API", version="1.0.0")
 
@@ -30,18 +26,6 @@ app.include_router(profiles.router)
 def health_check():
     return {"status": "online", "message": "FastAPI is running successfully"}
 
-# --- NEW SECURE TEST ENDPOINT ---
-@app.get("/secure-test")
-def secure_test_endpoint(current_user: CurrentUser = Depends(get_current_user)):
-    """
-    This endpoint is protected. You can only enter if you have a valid badge (CurrentUser).
-    """
-    return {
-        "message": "Welcome to the VIP area!",
-        "your_badge": current_user
-    }
-
 @app.api_route("/ping", methods=["GET", "HEAD"])
 def keep_alive():
-    """Render is awake."""
     return {"status": "awake"}

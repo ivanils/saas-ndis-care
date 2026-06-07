@@ -50,12 +50,12 @@
 
 @media (max-width: 768px) {
     .dashboardWrapper {
-        padding: 16px; /* Añade un respiro alrededor de todo el dashboard en móviles */
+        padding: 16px; /* padding around dashboard on mobile */
     }
 
     .column {
         &:first-child {
-            margin-bottom: 16px; /* Reduce el hueco entre la columna superior y la inferior */
+            margin-bottom: 16px; /* reduce gap between stacked columns */
         }
     }
 }

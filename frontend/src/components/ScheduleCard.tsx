@@ -3,10 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase'; // Asegúrate de que esta ruta es correcta para tu proyecto
+import { supabase } from '@/lib/supabase';
 import styles from './ScheduleCard.module.scss';
 
-// Definimos la estructura de datos que esperamos de Supabase
 interface ShiftData {
   id: string;
   start_time: string;
@@ -26,11 +25,11 @@ export default function ScheduleCard() {
   useEffect(() => {
     const fetchTodayShifts = async () => {
       try {
-        // 1. Obtener el usuario actual
+        // 1. Get the current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // 2. Traer los turnos del usuario haciendo JOIN con participantes
+        // 2. Fetch the user's shifts with participant join
         const { data, error } = await supabase
           .from('shifts')
           .select(`
@@ -50,7 +49,7 @@ export default function ScheduleCard() {
         if (error) throw error;
         
         if (data) {
-          // Type casting para asegurar que TypeScript entienda la relación
+          // Type cast required: Supabase returns joined data as unknown
           setShifts(data as unknown as ShiftData[]);
         }
       } catch (error) {
@@ -63,7 +62,7 @@ export default function ScheduleCard() {
     fetchTodayShifts();
   }, []);
 
-  // Helper para formatear la hora (ej: "8:00 AM")
+  // Format ISO time string to display time (e.g. "8:00 AM")
   const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -72,7 +71,7 @@ export default function ScheduleCard() {
     });
   };
 
-  // Helper para mostrar el status bonito (ej: 'in_progress' -> 'In Progress')
+  // Format underscore status to title case (e.g. 'in_progress' → 'In Progress')
   const formatStatusDisplay = (status: string) => {
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
@@ -82,9 +81,9 @@ export default function ScheduleCard() {
       <h3 className={styles.cardTitle}>{"Today's Schedule"}</h3>
       
       {loading ? (
-        <p style={{ color: 'var(--text-muted)', padding: '20px 0' }}>Cargando turnos...</p>
+        <p style={{ color: 'var(--text-muted)', padding: '20px 0' }}>Shifts loading...</p>
       ) : shifts.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No tienes turnos programados para hoy.</p>
+        <p style={{ color: 'var(--text-muted)', padding: '20px 0' }}>You have no shifts scheduled for today.</p>
       ) : (
         <div className={styles.timeline}>
           {shifts.map((shift) => {

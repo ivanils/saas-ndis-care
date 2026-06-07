@@ -107,7 +107,7 @@
     right: 0;
     flex-direction: row;
     padding: 8px 16px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); 
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     border-right: none;
     border-top: 1px solid var(--border-color);
     z-index: 2000;
@@ -119,7 +119,8 @@
   }
 
   .navigation {
-    width: 100%;
+    flex: 1;
+    width: auto;
   }
 
   .navList {
@@ -146,7 +147,7 @@
     &.active {
       background-color: transparent;
       color: var(--color-primary);
-      
+
       &::after {
         content: '';
         display: block;
@@ -160,6 +161,22 @@
   }
 
   .footer {
-    display: none;
+    display: flex;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .logoutBtn {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 4px;
+    font-size: 0.7rem;
+    width: auto;
+
+    &:hover {
+      background-color: transparent;
+      color: var(--color-primary);
+    }
   }
 }

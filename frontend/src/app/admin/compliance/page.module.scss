@@ -72,7 +72,7 @@
   gap: 16px;
 
   &.urgent {
-    border-left: 4px solid #EF4444; /* Rojo para incidentes pendientes */
+    border-left: 4px solid #EF4444; /* red border for urgent incidents */
     background-color: #FEF2F2;
   }
 }
@@ -144,4 +144,54 @@
   justify-content: center;
   align-items: center;
   height: 60vh;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 16px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+
+    h1 { font-size: 1.4rem; }
+  }
+
+  .tabsWrapper {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 12px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .tabBtn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .reportCard {
+    padding: 16px;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .metaInfo {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .actionRow {
+    justify-content: stretch;
+
+    button { width: 100%; }
+  }
 }

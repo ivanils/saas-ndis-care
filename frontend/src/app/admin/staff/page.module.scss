@@ -7,12 +7,12 @@
   width: 100%;
 }
 
-/* 1. ARREGLO DEL HEADER Y BOTÓN TORCIDO */
+/* 1. HEADER LAYOUT FIX */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Cambiado a center para alinear perfectamente */
-  flex-wrap: wrap; /* Permite que el botón baje en pantallas muy pequeñas */
+  align-items: center; /* center aligns button with title */
+  flex-wrap: wrap; /* allows button to wrap on small screens */
   gap: 16px;
   margin-bottom: 32px;
 
@@ -30,7 +30,7 @@
   }
 }
 
-/* 2. NUEVOS ESTILOS PARA LA BARRA DE BÚSQUEDA */
+/* 2. SEARCH BAR */
 .searchBarWrapper {
   margin-bottom: 24px;
 }
@@ -51,7 +51,7 @@
 
 .searchInput {
   width: 100%;
-  padding: 12px 16px 12px 42px; /* Espacio extra a la izquierda para el icono */
+  padding: 12px 16px 12px 42px; /* left padding for search icon */
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background-color: var(--color-surface);
@@ -161,13 +161,13 @@
 }
 
 
-/* 3. VERSIÓN MOBILE: TABLA SIN SCROLL (TARJETAS) */
+/* 3. MOBILE: TABLE AS CARDS */
 @media (max-width: 768px) {
   .pageContainer {
-    padding: 16px; /* Menos padding en móvil */
+    padding: 16px; /* reduced padding on mobile */
   }
 
-  /* Ocultamos cabeceras de tabla nativas */
+  /* hide native table headers */
   .staffTable thead {
     display: none; 
   }
@@ -178,7 +178,7 @@
     width: 100%;
   }
 
-  /* Cada fila (tr) ahora es una tarjeta */
+  /* each row (tr) becomes a card */
   .staffTable tr {
     margin-bottom: 16px;
     border: 1px solid var(--border-color);
@@ -188,11 +188,11 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 
     &:hover {
-      background-color: #fff; /* Quitamos el hover de desktop */
+      background-color: #fff; /* remove desktop hover */
     }
   }
 
-  /* Cada celda (td) usa flexbox para separar el Título (izq) y el Valor (der) */
+  /* each cell uses flexbox: label left, value right */
   .staffTable td {
     display: flex;
     justify-content: space-between;
@@ -203,11 +203,11 @@
 
     &:last-child {
       border-bottom: none;
-      justify-content: center; /* Centrar el botón de acción */
+      justify-content: center; /* center the action button */
       padding-top: 16px;
     }
 
-    /* Inyectamos los títulos de las columnas usando seudoelementos */
+    /* inject column labels via pseudo-elements */
     &::before {
       font-weight: 600;
       color: var(--text-muted);
@@ -221,17 +221,44 @@
     &:nth-child(1)::before { content: "Team Member"; }
     &:nth-child(2)::before { content: "Role"; }
     &:nth-child(3)::before { content: "Status"; }
-    &:nth-child(4)::before { display: none; } /* El botón no necesita título */
+    &:nth-child(4)::before { display: none; } /* action button needs no label */
   }
 
   .actionBtn {
-    width: 100%; /* Botón grande y fácil de tocar en móvil */
+    width: 100%;
     padding: 12px;
+  }
+
+  .searchInputContainer {
+    max-width: 100%;
+  }
+
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modalContent {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }
 
 
-/* --- MODALES Y DRAWERS (Sin cambios, se mantienen igual) --- */
+/* --- MODALS & DRAWERS --- */
 .loaderContainer {
   display: flex;
   justify-content: center;
@@ -351,7 +378,7 @@
 
 @media (max-width: 480px) {
   .drawerContent {
-    padding: 24px 16px; /* Drawer un poco más compacto en móvil */
+    padding: 24px 16px; /* compact drawer on mobile */
   }
 }
 

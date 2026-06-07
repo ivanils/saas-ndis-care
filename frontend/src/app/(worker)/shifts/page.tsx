@@ -75,15 +75,6 @@ export default function MyShiftsPage() {
     fetchAllShifts();
   }, []);
 
-  // // Sync Global Date Dropdown with Calendar Navigation month
-  // useEffect(() => {
-  //   const targetDate = new Date();
-  //   if (dateFilter === 'Last Month') {
-  //     targetDate.setMonth(targetDate.getMonth() - 1);
-  //   }
-  //   setCurrentCalendarDate(targetDate);
-  // }, [dateFilter]);
-
   // --- COMPREHENSIVE FILTERING LOGIC ---
   const getStatusMapping = (status: string) => {
     switch (status) {

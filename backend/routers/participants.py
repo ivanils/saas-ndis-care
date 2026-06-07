@@ -75,7 +75,7 @@ def get_participant(participant_id: str, badge: CurrentUser = Depends(get_curren
                 detail="Participant not found or access denied."
             )
             
-        return response.data[0] # Ret
+        return response.data[0]
         
     except HTTPException:
         raise # 404 error raised

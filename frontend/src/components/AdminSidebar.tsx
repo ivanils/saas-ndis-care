@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Users, ShieldAlert, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Users, ShieldAlert, Settings, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './AdminSidebar.module.scss';
 
@@ -36,7 +36,7 @@ export default function AdminSidebar() {
     {
       name: 'Settings',
       path: '/admin/settings',
-      icon: <LayoutDashboard size={20} />,
+      icon: <Settings size={20} />,
     }
   ];
 
