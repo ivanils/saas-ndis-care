@@ -75,9 +75,6 @@ export default function SettingsPage() {
       });
 
       toast.success('Profile updated successfully!');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1200);
 
     } catch (err) {
       console.error('Error updating profile:', err);
@@ -96,6 +93,13 @@ export default function SettingsPage() {
       }
 
       const file = event.target.files[0];
+
+      const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        toast.error('Only JPEG, PNG, WebP, or GIF images are allowed.');
+        setUploadingAvatar(false);
+        return;
+      }
 
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       if (file.size > MAX_FILE_SIZE) {
@@ -127,9 +131,6 @@ export default function SettingsPage() {
       setAvatarUrl(publicUrl);
 
       toast.success('Profile picture updated!');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1200);
 
     } catch (error) {
       console.error('Error uploading avatar:', error);
@@ -151,7 +152,6 @@ export default function SettingsPage() {
 
       if (error) throw error;
       setAvatarUrl(null);
-      window.location.reload();
     } catch (error) {
       console.error('Error removing avatar:', error);
     } finally {

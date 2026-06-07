@@ -1,5 +1,5 @@
 # backend/schemas.py
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, List
@@ -35,10 +35,10 @@ class ShiftUpdate(BaseModel):
     end_time: Optional[datetime] = None
     status: Optional[ShiftStatus] = None
     # location data for clock-in and clock-out (optional, but can be used for auditing and compliance)
-    clock_in_lat: Optional[float] = None
-    clock_in_lng: Optional[float] = None
-    clock_out_lat: Optional[float] = None
-    clock_out_lng: Optional[float] = None
+    clock_in_lat: Optional[float] = Field(None, ge=-90, le=90)
+    clock_in_lng: Optional[float] = Field(None, ge=-180, le=180)
+    clock_out_lat: Optional[float] = Field(None, ge=-90, le=90)
+    clock_out_lng: Optional[float] = Field(None, ge=-180, le=180)
 
 # Schema for sending data back to Next.js (Read)
 class ShiftResponse(BaseModel):
@@ -62,7 +62,7 @@ class ShiftResponse(BaseModel):
 class CareNoteCreate(BaseModel):
     participant_id: UUID
     shift_id: Optional[UUID] = None
-    content: str
+    content: str = Field(..., min_length=1, max_length=10000)
     media_urls: Optional[List[str]] = [] # Supabase storage URLs for any photos or files attached to the note
     signature_url: Optional[str] = None  #Patient or worker signature URL (if required for compliance)
 
@@ -79,19 +79,19 @@ class CareNoteResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        
+
 # AUTH SCHEMAS
 class UserRegister(BaseModel):
     email: str
     password: str
-    first_name: str
-    last_name: str
-    agency_name: str
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    agency_name: str = Field(..., min_length=1, max_length=200)
 
 class UserLogin(BaseModel):
     email: str
     password: str
-    
+
 # PROFILES SCHEMAS
 class ProfileResponse(BaseModel):
     id: UUID
@@ -105,22 +105,22 @@ class ProfileResponse(BaseModel):
         from_attributes = True
 
 class ProfileUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: Optional[str] = Field(None, max_length=100)
+    last_name: Optional[str] = Field(None, max_length=100)
     role: Optional[str] = None
     avatar_url: Optional[str] = None
 
 
 # PARTICIPANT SCHEMAS
-    
+
 class ParticipantCreate(BaseModel):
-    first_name: str
-    last_name: str
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
     ndis_id: Optional[str] = None
-    emergency_contact:str
+    emergency_contact: str
     medical_alerts: Optional[str] = None
     avatar_url: Optional[str] = None
-    
+
 class ParticipantResponse(BaseModel):
     id: UUID
     agency_id: UUID
@@ -136,10 +136,9 @@ class ParticipantResponse(BaseModel):
         from_attributes = True
 
 class ParticipantUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: Optional[str] = Field(None, max_length=100)
+    last_name: Optional[str] = Field(None, max_length=100)
     ndis_id: Optional[str] = None
     emergency_contact: Optional[str] = None
     medical_alerts: Optional[str] = None
     avatar_url: Optional[str] = None
-    

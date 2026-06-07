@@ -9,12 +9,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://saas-ndis-care-ivanils-projects.vercel.app"
-    ], 
-    allow_origin_regex=r"https://.*\.vercel\.app",
+        "https://saas-ndis-care-ivanils-projects.vercel.app",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 app.include_router(auth.router)
 app.include_router(shifts.router)

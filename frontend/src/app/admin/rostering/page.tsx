@@ -128,11 +128,15 @@ export default function RosteringPage() {
       return toast.error('Please fill in all required fields.');
     }
 
+    const start = new Date(`${shiftDate}T${startTime}`);
+    const end = new Date(`${shiftDate}T${endTime}`);
+    if (end <= start) return toast.error('End time must be after start time.');
+
     setIsSubmitting(true);
     try {
       const token = await getAuthToken();
-      const startDateTime = new Date(`${shiftDate}T${startTime}`).toISOString();
-      const endDateTime = new Date(`${shiftDate}T${endTime}`).toISOString();
+      const startDateTime = start.toISOString();
+      const endDateTime = end.toISOString();
 
       const response = await fetch(`${BACKEND_URL}/shifts/`, {
         method: 'POST',
