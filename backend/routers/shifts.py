@@ -112,6 +112,25 @@ def update_shift(shift_id: str, shift_data: schemas.ShiftUpdate, badge = Depends
             if update_dict["status"] not in WORKER_ALLOWED_STATUSES:
                 raise HTTPException(status_code=403, detail="Workers cannot set this status.")
 
+            # Prevent starting a shift that has already ended
+            if update_dict["status"] == "in_progress":
+                from datetime import datetime, timezone, timedelta
+                current = supabase_admin.table("shifts") \
+                    .select("start_time, end_time") \
+                    .eq("id", shift_id) \
+                    .maybe_single() \
+                    .execute()
+                if current.data:
+                    end_time_str = current.data.get("end_time")
+                    start_time_str = current.data.get("start_time")
+                    now = datetime.now(timezone.utc)
+                    if end_time_str:
+                        cutoff = datetime.fromisoformat(end_time_str)
+                    else:
+                        cutoff = datetime.fromisoformat(start_time_str) + timedelta(hours=2)
+                    if now > cutoff:
+                        raise HTTPException(status_code=400, detail="Cannot start a shift that has already passed.")
+
         # 3. Build the secure query scoped to the user's agency
         query = supabase_admin.table("shifts").update(update_dict).eq("id", shift_id).eq("agency_id", str(badge.agency_id))
 

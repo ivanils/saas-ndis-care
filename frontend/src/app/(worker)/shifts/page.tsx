@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Search, X, Clock, MapPin, FileText, User, CalendarX2, Check, PlayCircle, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { Loader2, Search, X, Clock, MapPin, FileText, User, CalendarX2, PlayCircle, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import styles from './page.module.scss';
 
 interface Shift {
@@ -78,14 +78,26 @@ export default function MyShiftsPage() {
   // --- COMPREHENSIVE FILTERING LOGIC ---
   const getStatusMapping = (status: string) => {
     switch (status) {
-      case 'completed': return { label: 'Completed', className: styles.completed };
-      case 'in_progress':
-      case 'pending': return { label: 'Pending Approval', className: styles.pending_approval };
-      case 'approved':
-      case 'scheduled': return { label: 'Assigned', className: styles.assigned };
-      default: return { label: status, className: styles.assigned };
+      case 'assigned':         return { label: 'Assigned',          className: styles.assigned };
+      case 'approved':         return { label: 'Assigned',          className: styles.assigned };
+      case 'in_progress':      return { label: 'In Progress',       className: styles.in_progress };
+      case 'pending_approval': return { label: 'Pending Approval',  className: styles.pending_approval };
+      case 'completed':        return { label: 'Completed',         className: styles.completed };
+      case 'disputed':         return { label: 'Disputed',          className: styles.disputed };
+      case 'cancelled':        return { label: 'Cancelled',         className: styles.cancelled };
+      default:                 return { label: status,              className: styles.assigned };
     }
   };
+
+  const isShiftPast = (shift: Shift): boolean => {
+    const cutoff = shift.end_time
+      ? new Date(shift.end_time)
+      : new Date(new Date(shift.start_time).getTime() + 2 * 60 * 60 * 1000);
+    return new Date() > cutoff;
+  };
+
+  const canStartShift = (shift: Shift, isToday: boolean): boolean =>
+    isToday && !isShiftPast(shift) && (shift.status === 'assigned' || shift.status === 'approved');
 
   const filteredShifts = shifts.filter((shift) => {
     // 1. Search filter matching name
@@ -298,9 +310,24 @@ export default function MyShiftsPage() {
                     <span className={`${styles.badge} ${mappedStatus.className}`}>{mappedStatus.label}</span>
                   </div>
                   <div className={styles.actionCol}>
-                    {mappedStatus.label === 'Completed' && <button className={styles.outlineBtn} onClick={(e) => { e.stopPropagation(); handleViewCareNote(shift); }}>View Care Note</button>}
-                    {mappedStatus.label === 'Pending Approval' && <span className={styles.actionText}>Awaiting Admin Review</span>}
-                    {mappedStatus.label === 'Assigned' && <button className={styles.outlineBtn} onClick={(e) => { e.stopPropagation(); handleViewDetails(shift); }}>View Details</button>}
+                    {(shift.status === 'assigned' || shift.status === 'approved') && (
+                      <button className={styles.outlineBtn} onClick={(e) => { e.stopPropagation(); handleViewDetails(shift); }}>View Details</button>
+                    )}
+                    {shift.status === 'in_progress' && (
+                      <span className={styles.actionText}>Currently Active</span>
+                    )}
+                    {shift.status === 'completed' && (
+                      <button className={styles.outlineBtn} onClick={(e) => { e.stopPropagation(); handleViewCareNote(shift); }}>View Care Note</button>
+                    )}
+                    {shift.status === 'pending_approval' && (
+                      <span className={styles.actionText}>Awaiting Admin Review</span>
+                    )}
+                    {shift.status === 'disputed' && (
+                      <span className={`${styles.actionText} ${styles.disputedText}`}>Disputed</span>
+                    )}
+                    {shift.status === 'cancelled' && (
+                      <span className={styles.actionText}>Cancelled</span>
+                    )}
                   </div>
                 </div>
               );
@@ -398,19 +425,33 @@ export default function MyShiftsPage() {
                             <button className={styles.actionBtnSmall} onClick={() => { closeDrawer(); handleViewDetails(shift); }}>
                               <User size={14} /> View Plan
                             </button>
-                            {mappedStatus.label === 'Completed' && (
+                            {(shift.status === 'assigned' || shift.status === 'approved') && (
+                              canStartShift(shift, isToday)
+                                ? <button className={`${styles.actionBtnSmall} ${styles.primary}`} onClick={() => handleGenericAction('Start Shift')}>
+                                    <PlayCircle size={14} /> Start Shift
+                                  </button>
+                                : isToday
+                                  ? <span className={styles.actionText}>Shift time has passed</span>
+                                  : null
+                            )}
+                            {shift.status === 'in_progress' && (
+                              <span className={`${styles.actionText} ${styles.activeText}`}>
+                                <span className={styles.activeDot} /> Currently Active
+                              </span>
+                            )}
+                            {shift.status === 'completed' && (
                               <button className={styles.actionBtnSmall} onClick={() => { closeDrawer(); handleViewCareNote(shift); }}>
                                 <FileText size={14} /> Read Note
                               </button>
                             )}
-                            {mappedStatus.label === 'Pending Approval' && (
-                              <>
-                                <button className={`${styles.actionBtnSmall} ${styles.primary}`} onClick={() => handleGenericAction('Accept Shift')}><Check size={14} /> Accept</button>
-                                <button className={`${styles.actionBtnSmall} ${styles.danger}`} onClick={() => handleGenericAction('Decline Shift')}><X size={14} /> Decline</button>
-                              </>
+                            {shift.status === 'pending_approval' && (
+                              <span className={styles.actionText}>Awaiting Admin Review</span>
                             )}
-                            {mappedStatus.label === 'Assigned' && isToday && (
-                              <button className={`${styles.actionBtnSmall} ${styles.primary}`} onClick={() => handleGenericAction('Start Shift')}><PlayCircle size={14} /> Start Shift</button>
+                            {shift.status === 'disputed' && (
+                              <span className={`${styles.actionText} ${styles.disputedText}`}>Contact your admin</span>
+                            )}
+                            {shift.status === 'cancelled' && (
+                              <span className={styles.actionText}>This shift was cancelled</span>
                             )}
                           </div>
                         </div>

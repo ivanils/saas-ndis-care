@@ -191,6 +191,10 @@
     background-color: var(--status-in-progress-bg);
     color: var(--status-in-progress-text);
   }
+  &.in_progress {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+  }
   &.alert {
     background-color: var(--status-alert-bg);
     color: var(--status-alert-text);
@@ -206,6 +210,10 @@
   &.completed {
     background-color: var(--status-completed-bg);
     color: var(--status-completed-text);
+  }
+  &.disputed {
+    background-color: #FEE2E2;
+    color: #991B1B;
   }
 }
 
@@ -853,7 +861,36 @@
   justify-content: center;
   width: 100%;
 }
-// media queries 
+/* --- SHIFT STATUS HELPER CLASSES --- */
+.activeText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #1E40AF;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.activeDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #1E40AF;
+  flex-shrink: 0;
+  animation: activePulse 1.5s infinite;
+}
+
+.disputedText {
+  color: #991B1B;
+}
+
+@keyframes activePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+// media queries
 @media (max-width: 768px) {
   .viewToggle{
     justify-content: space-evenly;
