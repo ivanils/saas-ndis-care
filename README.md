@@ -77,13 +77,6 @@ Browser (Next.js / Vercel)
 
 Every core table carries an `agency_id` foreign key. PostgreSQL Row-Level Security (RLS) policies enforce agency boundaries at the database layer — even if application logic has a bug, cross-tenant data access is structurally impossible.
 
-```sql
--- Workers only see shifts for their own agency
-CREATE POLICY "agency_isolation" ON shifts
-  FOR ALL USING (agency_id = (
-    SELECT agency_id FROM profiles WHERE id = auth.uid()
-  ));
-```
 
 All clinical records use **soft deletes** (`deleted_at` timestamp) instead of hard `DELETE` — preserving a complete audit trail as required by NDIS regulations.
 
@@ -117,7 +110,7 @@ All clinical records use **soft deletes** (`deleted_at` timestamp) instead of ha
 | Authentication | Supabase Auth — JWT + SSR cookies (`@supabase/ssr`) |
 | Maps | Leaflet + react-leaflet |
 | File storage | Supabase Storage |
-| Deployment | Vercel (frontend) |
+| Deployment | Vercel (frontend) | Render (backend) | Supabase
 
 ---
 
