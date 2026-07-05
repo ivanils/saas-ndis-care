@@ -233,20 +233,26 @@ export default function StaffPage() {
   const handleAddCertification = async () => {
     if (!selectedWorker || !newCertDate) return toast.error("Please select an expiration date.");
     try {
-      const { error } = await supabase.from('worker_certifications').insert({ worker_id: selectedWorker.id, type: newCertType, expiration_date: newCertDate, status: 'active' });
-      if (error) throw error;
+      const response = await fetch('/api/certifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workerId: selectedWorker.id, type: newCertType, expirationDate: newCertDate }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to add certification');
       toast.success("Certification added!");
       setNewCertDate(''); setIsAddingCert(false);
-      fetchStaffData(); setSelectedWorker(null); 
+      fetchStaffData(); setSelectedWorker(null);
     } catch (error) {
-      toast.error("Failed to add certification.");
+      if (error instanceof Error) toast.error(error.message);
+      else toast.error("Failed to add certification.");
     }
   };
 
   const togglePatientAssignment = async (participantId: string) => {
     if (!selectedWorker) return;
     const isAssigned = assignedPatientIds.has(participantId);
-    
+
     // Optimistic Update
     const newSet = new Set(assignedPatientIds);
     if (isAssigned) newSet.delete(participantId);
@@ -254,14 +260,22 @@ export default function StaffPage() {
     setAssignedPatientIds(newSet);
 
     try {
-      if (isAssigned) {
-        await supabase.from('worker_participants').delete().match({ worker_id: selectedWorker.id, participant_id: participantId });
-      } else {
-        await supabase.from('worker_participants').insert({ worker_id: selectedWorker.id, participant_id: participantId });
+      const response = await fetch('/api/staff/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workerId: selectedWorker.id,
+          participantId,
+          action: isAssigned ? 'unassign' : 'assign',
+        }),
+      });
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || 'Failed to update assignment');
       }
     } catch (error) {
       toast.error('Failed to update assignment.');
-      if (agencyId) fetchWorkerPatients(selectedWorker.id, agencyId); // Revert
+      if (agencyId) fetchWorkerPatients(selectedWorker.id, agencyId); // Revert optimistic update
     }
   };
 

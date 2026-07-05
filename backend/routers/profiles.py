@@ -76,9 +76,16 @@ def update_profile(profile_id: str, profile_data: schemas.ProfileUpdate, badge: 
         if not update_dict:
              raise HTTPException(status_code=400, detail="No fields provided for update.")
 
-        # 2. Add extra security logic (Business Rule): Only admins can change roles
-        if "role" in update_dict and badge.role != "admin":
-            raise HTTPException(status_code=403, detail="Only administrators can change roles.")
+        # 2. Role-change guard: two-level enforcement
+        #    - Only admin/super_admin callers may touch the role field at all.
+        #    - An admin (agency-level) may only assign 'worker'; promoting to admin or
+        #      super_admin requires super_admin privileges, preventing horizontal
+        #      privilege escalation between agencies and vertical escalation to super_admin.
+        if "role" in update_dict:
+            if badge.role not in ("admin", "super_admin"):
+                raise HTTPException(status_code=403, detail="Only administrators can change roles.")
+            if badge.role == "admin" and update_dict["role"] != "worker":
+                raise HTTPException(status_code=403, detail="Admins can only assign the 'worker' role.")
 
         # 3. Execute the update with agency_id boundary
         response = supabase_admin.table("profiles") \
