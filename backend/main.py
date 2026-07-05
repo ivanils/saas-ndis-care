@@ -1,7 +1,8 @@
 # backend/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, shifts, care_notes, participants, profiles
+
+from routers import auth, care_notes, participants, profiles, shifts
 
 app = FastAPI(title="NDIS Care SaaS API", version="1.0.0")
 

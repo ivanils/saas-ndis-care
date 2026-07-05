@@ -1,9 +1,11 @@
 #backend/routers/shifts.py
-from fastapi import APIRouter, Depends, HTTPException, status
-from database import supabase_admin
-import schemas
-from dependencies import get_current_user
 from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, status
+
+import schemas
+from database import supabase_admin
+from dependencies import get_current_user
 
 router = APIRouter(
     prefix="/shifts",
@@ -114,7 +116,7 @@ def update_shift(shift_id: str, shift_data: schemas.ShiftUpdate, badge = Depends
 
             # Prevent starting a shift that has already ended
             if update_dict["status"] == "in_progress":
-                from datetime import datetime, timezone, timedelta
+                from datetime import datetime, timedelta, timezone
                 current = supabase_admin.table("shifts") \
                     .select("start_time, end_time") \
                     .eq("id", shift_id) \

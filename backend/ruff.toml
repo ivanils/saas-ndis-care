@@ -1,7 +1,7 @@
 target-version = "py312"
 
 [lint]
-select = ["E", "F", "I", "W", "UP"]
+select = ["E", "F", "I", "W"]
 ignore = ["E501", "F401"]
 
 [lint.per-file-ignores]

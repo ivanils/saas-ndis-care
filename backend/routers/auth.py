@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from database import supabase, supabase_admin
+
 import schemas
+from database import supabase, supabase_admin
 
 # Creating a router for authentication-related endpoints
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -14,7 +15,7 @@ def register_agency_and_admin(user_data: schemas.UserRegister):
         agency_response = supabase_admin.table("agencies").insert({"name": user_data.agency_name}).execute()
         new_agency = agency_response.data[0]  # Get the newly created agency record
         agency_id = new_agency["id"]
-        
+
         # 2. Register the user in Supabase Auth
         auth_response = supabase.auth.sign_up({
             "email": user_data.email,
@@ -31,7 +32,7 @@ def register_agency_and_admin(user_data: schemas.UserRegister):
             user_id,
             {"app_metadata": {"agency_id": agency_id, "role": "admin"}}
         )
-        
+
         # 3. Create the user's profile in public.profiles
         supabase_admin.table("profiles").upsert({
             "id": user_id,
@@ -40,11 +41,11 @@ def register_agency_and_admin(user_data: schemas.UserRegister):
             "first_name": user_data.first_name,
             "last_name": user_data.last_name
         }).execute()
-        
+
         return {"message": "Agency and Admin user registered successfully! You can now log in."}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    
+
 @router.post("/login")
 def login(credentials: schemas.UserLogin):
     """
