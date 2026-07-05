@@ -1,11 +1,49 @@
 // src/app/(app)/my-shifts/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Search, X, Clock, MapPin, FileText, User, CalendarX2, PlayCircle, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import styles from './page.module.scss';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+const SHIFTS_SELECT = `
+  id,
+  participant_id,
+  start_time,
+  end_time,
+  status,
+  clock_in_lat,
+  clock_in_lng,
+  participants (first_name, last_name, avatar_url, address)
+`;
+
+async function fetchWorkerShifts(userId: string): Promise<Shift[]> {
+  const { data, error } = await supabase
+    .from('shifts')
+    .select(SHIFTS_SELECT)
+    .eq('worker_id', userId)
+    .order('start_time', { ascending: false });
+  if (error) throw error;
+  return (data as unknown as Shift[]) || [];
+}
+
+function getCoordinates(): Promise<{ latitude: number; longitude: number }> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('not_supported'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      err => reject(err),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+}
 
 interface PreviousCareNote {
   content: string;
@@ -19,6 +57,8 @@ interface Shift {
   start_time: string;
   end_time: string;
   status: string;
+  clock_in_lat?: number | null;
+  clock_in_lng?: number | null;
   participants: {
     first_name: string;
     last_name: string;
@@ -50,40 +90,39 @@ export default function MyShiftsPage() {
   const [loadingPreviousNote, setLoadingPreviousNote] = useState(false);
   // --- ALERT MODAL STATE ---
   const [featureAlert, setFeatureAlert] = useState<string | null>(null);
+  const [geoBlocked, setGeoBlocked] = useState(false);
+  const [shiftActionLoading, setShiftActionLoading] = useState<string | null>(null);
 
   // --- DRAWER STATE ---
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Fetch initial raw shifts from Supabase
+  // Used only by action handlers (Start Shift / Clock-Out) to silently
+  // refresh the shift list after a mutation. Does not manage loading state
+  // because the per-button shiftActionLoading already covers that UX.
+  const fetchAllShifts = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setShifts([]); return; }
+      setShifts(await fetchWorkerShifts(user.id));
+    } catch (error) {
+      console.error('Error fetching shifts:', error);
+    }
+  }, []);
+
+  // Initial mount fetch — inline async IIFE so the linter can verify that
+  // all setState calls are after await (not synchronous in the effect body).
   useEffect(() => {
-    const fetchAllShifts = async () => {
+    (async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data, error } = await supabase
-          .from('shifts')
-          .select(`
-            id,
-            participant_id,
-            start_time,
-            end_time,
-            status,
-            participants (first_name, last_name, avatar_url)
-          `)
-          .eq('worker_id', user.id)
-          .order('start_time', { ascending: false });
-
-        if (error) throw error;
-        setShifts((data as unknown as Shift[]) || []);
+        if (!user) { setShifts([]); return; }
+        setShifts(await fetchWorkerShifts(user.id));
       } catch (error) {
         console.error('Error fetching shifts:', error);
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchAllShifts();
+    })();
   }, []);
 
   // --- COMPREHENSIVE FILTERING LOGIC ---
@@ -200,6 +239,62 @@ export default function MyShiftsPage() {
   const closeDrawer = () => setSelectedDate(null);
   const handleGenericAction = (actionName: string) => {
     setFeatureAlert(actionName);
+  };
+
+  const handleStartShift = async (shift: Shift) => {
+    setShiftActionLoading(shift.id);
+    try {
+      let coords: { latitude: number; longitude: number };
+      try {
+        coords = await getCoordinates();
+      } catch {
+        setGeoBlocked(true);
+        return;
+      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+      const res = await fetch(`${BACKEND_URL}/shifts/${shift.id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'in_progress', clock_in_lat: coords.latitude, clock_in_lng: coords.longitude }),
+      });
+      const body = await res.json();
+      if (!res.ok) { toast.error(body.detail || 'Failed to start shift.'); return; }
+      toast.success('Shift started! Stay safe.');
+      await fetchAllShifts();
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setShiftActionLoading(null);
+    }
+  };
+
+  const handleClockOut = async (shift: Shift) => {
+    setShiftActionLoading(shift.id);
+    try {
+      let coords: { latitude: number; longitude: number };
+      try {
+        coords = await getCoordinates();
+      } catch {
+        setGeoBlocked(true);
+        return;
+      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+      const res = await fetch(`${BACKEND_URL}/shifts/${shift.id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed', clock_out_lat: coords.latitude, clock_out_lng: coords.longitude }),
+      });
+      const body = await res.json();
+      if (!res.ok) { toast.error(body.detail || 'Failed to clock out.'); return; }
+      toast.success('Clocked out successfully. Great work!');
+      await fetchAllShifts();
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setShiftActionLoading(null);
+    }
   };
 
   // --- TIME FORMATTING UTILITIES ---
@@ -462,17 +557,31 @@ export default function MyShiftsPage() {
                             </button>
                             {(shift.status === 'assigned' || shift.status === 'approved') && (
                               canStartShift(shift, isToday)
-                                ? <button className={`${styles.actionBtnSmall} ${styles.primary}`} onClick={() => handleGenericAction('Start Shift')}>
-                                    <PlayCircle size={14} /> Start Shift
+                                ? <button
+                                    className={`${styles.actionBtnSmall} ${styles.primary}`}
+                                    onClick={() => handleStartShift(shift)}
+                                    disabled={shiftActionLoading === shift.id}
+                                  >
+                                    <PlayCircle size={14} />
+                                    {shiftActionLoading === shift.id ? 'Starting…' : 'Start Shift'}
                                   </button>
                                 : isToday
                                   ? <span className={styles.actionText}>Shift time has passed</span>
                                   : null
                             )}
                             {shift.status === 'in_progress' && (
-                              <span className={`${styles.actionText} ${styles.activeText}`}>
-                                <span className={styles.activeDot} /> Currently Active
-                              </span>
+                              <>
+                                <span className={`${styles.actionText} ${styles.activeText}`}>
+                                  <span className={styles.activeDot} /> Currently Active
+                                </span>
+                                <button
+                                  className={`${styles.actionBtnSmall} ${styles.primary}`}
+                                  onClick={() => handleClockOut(shift)}
+                                  disabled={shiftActionLoading === shift.id}
+                                >
+                                  {shiftActionLoading === shift.id ? 'Clocking out…' : 'Clock-Out'}
+                                </button>
+                              </>
                             )}
                             {shift.status === 'completed' && (
                               <button className={styles.actionBtnSmall} onClick={() => { closeDrawer(); handleViewCareNote(shift); }}>
@@ -583,13 +692,21 @@ export default function MyShiftsPage() {
                 <h3 className={styles.sectionTitle}>Section 2: Quick Actions</h3>
                 <div>
                   {selectedShift.status === 'in_progress' && (
-                    <button className={styles.btnPrimaryFull} onClick={() => { handleGenericAction('Clock-Out'); closeModal(); }}>
-                      Clock-Out
+                    <button
+                      className={styles.btnPrimaryFull}
+                      onClick={() => { handleClockOut(selectedShift); closeModal(); }}
+                      disabled={shiftActionLoading === selectedShift.id}
+                    >
+                      {shiftActionLoading === selectedShift.id ? 'Clocking out…' : 'Clock-Out'}
                     </button>
                   )}
                   {(selectedShift.status === 'assigned' || selectedShift.status === 'approved') && !isShiftPast(selectedShift) && (
-                    <button className={styles.btnPrimaryFull} onClick={() => { handleGenericAction('Start Shift'); closeModal(); }}>
-                      Start Shift
+                    <button
+                      className={styles.btnPrimaryFull}
+                      onClick={() => { handleStartShift(selectedShift); closeModal(); }}
+                      disabled={shiftActionLoading === selectedShift.id}
+                    >
+                      {shiftActionLoading === selectedShift.id ? 'Starting…' : 'Start Shift'}
                     </button>
                   )}
                   <div className={styles.btnGroupHalf}>
@@ -649,6 +766,30 @@ export default function MyShiftsPage() {
           </div>
         </div>
       )}
+{/* --- LOCATION REQUIRED MODAL --- */}
+      {geoBlocked && (
+        <div className={styles.alertModalOverlay} onClick={() => setGeoBlocked(false)}>
+          <div className={styles.alertModalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.alertModalHeader}>
+              <h3>Location Required</h3>
+            </div>
+            <div className={styles.alertModalBody}>
+              <p>
+                Your location is required to start or clock out of a shift. This is used for attendance verification in compliance with NDIS standards.
+              </p>
+              <p>
+                Please allow location access in your browser settings and try again.
+              </p>
+            </div>
+            <div className={styles.alertModalActions}>
+              <button className={styles.btnPrimaryFull} onClick={() => setGeoBlocked(false)}>
+                Understood
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 {/* --- FEATURE IN DEVELOPMENT MODAL --- */}
       {featureAlert && (
         <div className={styles.alertModalOverlay} onClick={() => setFeatureAlert(null)}>
