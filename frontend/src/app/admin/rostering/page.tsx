@@ -172,11 +172,11 @@ export default function RosteringPage() {
       const response = await fetch(`${BACKEND_URL}/shifts/${shiftId}`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'assigned' }) 
+        body: JSON.stringify({ status: 'approved' })
       });
       if (!response.ok) throw new Error('Failed to update shift');
 
-      setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: 'assigned' } : s));
+      setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: 'approved' } : s));
       toast.success('Shift approved and scheduled!');
     } catch (error) {
       toast.error('Failed to approve shift.');
