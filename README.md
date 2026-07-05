@@ -110,8 +110,8 @@ All clinical records use **soft deletes** (`deleted_at` timestamp) instead of ha
 | Authentication | Supabase Auth — JWT + SSR cookies (`@supabase/ssr`) |
 | Maps | Leaflet + react-leaflet |
 | File storage | Supabase Storage |
-| Deployment | Vercel (frontend) | Render (backend) | Supabase
-
+| Frontend Deployment | Vercel 
+| Backend Deployment | Render
 ---
 
 ## Security
