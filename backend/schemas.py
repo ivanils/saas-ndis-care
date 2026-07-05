@@ -102,6 +102,8 @@ class ProfileResponse(BaseModel):
     role: str
     first_name: str
     last_name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
     avatar_url: Optional[str] = None
 
     class Config:
