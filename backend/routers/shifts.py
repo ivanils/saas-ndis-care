@@ -27,9 +27,10 @@ def create_shift(shift: schemas.ShiftCreate, badge = Depends(get_current_user)):
         shift_data = shift.model_dump(mode="json") # Convert Pydantic model to dict
         shift_data["agency_id"] = str(badge.agency_id)
 
-        # Workers can only create shifts for themselves
+        # Workers can only create shifts for themselves and cannot choose the initial status
         if badge.role == "worker":
             shift_data["worker_id"] = str(badge.id)
+            shift_data["status"] = "assigned"
         elif badge.role == "admin":
             if not shift_data.get("worker_id"):
                 raise HTTPException(
