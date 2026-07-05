@@ -10,7 +10,6 @@ from dependencies import CurrentUser, get_current_user
 router = APIRouter(
     prefix="/care-notes",
     tags=["Care Notes"],
-    dependencies=[Depends(get_current_user)]
 )
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.CareNoteResponse)

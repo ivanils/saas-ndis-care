@@ -10,7 +10,6 @@ from dependencies import CurrentUser, get_current_user
 router = APIRouter(
     prefix="/profiles",
     tags=["Team / Profiles"],
-    dependencies=[Depends(get_current_user)]
 )
 
 @router.get("/", response_model=List[schemas.ProfileResponse])

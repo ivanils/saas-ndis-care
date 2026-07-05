@@ -11,7 +11,6 @@ from dependencies import CurrentUser, get_current_user
 router = APIRouter(
     prefix="/participants",
     tags=["Participants"],
-    dependencies=[Depends(get_current_user)]
 )
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.ParticipantResponse)
