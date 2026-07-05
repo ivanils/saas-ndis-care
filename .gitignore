@@ -25,3 +25,11 @@ yarn-error.log*
 # Data Base (Supabase CLI)
 supabase/.temp/
 supabase/.branches/
+Bellvi_Project_Overview.pdf
+
+# Claude Code
+CLAUDE.md
+architecture_ndis_v2.pdf
+architecture_ndis.pdf
+arquitectura_ndis.pdf
+arquitectura-ndis-care.pdf

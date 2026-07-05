@@ -10,6 +10,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://saas-ndis-care-ivanils-projects.vercel.app",
+        "https://bellvi.ivanllanos.com",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
