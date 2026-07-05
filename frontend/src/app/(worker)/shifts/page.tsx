@@ -74,7 +74,7 @@ export default function MyShiftsPage() {
 
   // --- FILTER STATES ---
   const [statusFilter, setStatusFilter] = useState<string>('All');
-  const [dateFilter, setDateFilter] = useState<string>('This Month');
+  const [dateFilter, setDateFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // --- CALENDAR NAV STATE ---

@@ -135,9 +135,15 @@ class ParticipantResponse(BaseModel):
     last_name: str
     ndis_id: Optional[str] = None
     address: Optional[str] = None
+    phone: Optional[str] = None
     emergency_contact: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
     medical_alerts: Optional[str] = None
     medical_condition_tag: Optional[str] = None
+    blood_type: Optional[str] = None
+    allergies: Optional[str] = None
+    mobility_notes: Optional[str] = None
     avatar_url: Optional[str] = None
     created_at: datetime
 
