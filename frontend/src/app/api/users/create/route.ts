@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { email, password, firstName, lastName, role, agencyId } = body;
+    const { email, password, firstName, lastName, phone, role, agencyId } = body;
 
     // Agency admins can only create workers for their own agency
     if (callerProfile.role === 'admin') {
@@ -68,6 +68,7 @@ export async function POST(request: Request) {
       first_name: firstName,
       last_name: lastName,
       email: email,
+      phone: phone ?? null,
     });
 
     if (profileError) {

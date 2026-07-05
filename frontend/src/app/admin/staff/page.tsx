@@ -82,20 +82,24 @@ export default function StaffPage() {
       const currentAgencyId = adminProfile.agency_id;
       setAgencyId(currentAgencyId);
 
-      const { data: workersData } = await supabase
+      const { data: workersData, error: workersError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, avatar_url, role, email, phone')
         .eq('agency_id', currentAgencyId)
         .eq('role', 'worker')
         .order('first_name', { ascending: true });
 
+      if (workersError) throw workersError;
+
       const workers = (workersData || []) as WorkerProfile[];
       const workerIds = workers.map(w => w.id);
-      
-      const { data: certsData } = await supabase
+
+      const { data: certsData, error: certsError } = await supabase
         .from('worker_certifications')
         .select('id, worker_id, type, expiration_date')
         .in('worker_id', workerIds.length > 0 ? workerIds : ['uuid-placeholder']);
+
+      if (certsError) throw certsError;
 
       const certs = (certsData || []) as WorkerCert[];
       const today = new Date();
@@ -183,6 +187,7 @@ export default function StaffPage() {
           firstName: inviteFirstName,
           lastName: inviteLastName,
           email: inviteEmail,
+          phone: invitePhone,
           password: invitePassword,
           role: 'worker',
           agencyId: agencyId

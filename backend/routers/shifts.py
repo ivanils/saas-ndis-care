@@ -10,8 +10,6 @@ from dependencies import get_current_user
 router = APIRouter(
     prefix="/shifts",
     tags=["Shifts"],
-    # All routes require a valid JWT
-    dependencies=[Depends(get_current_user)]
 )
 
 WORKER_ALLOWED_STATUSES = {"in_progress", "completed", "pending_approval"}
