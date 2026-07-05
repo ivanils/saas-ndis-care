@@ -183,6 +183,7 @@ export default function StaffPage() {
           firstName: inviteFirstName,
           lastName: inviteLastName,
           email: inviteEmail,
+          phone: invitePhone,
           password: invitePassword,
           role: 'worker',
           agencyId: agencyId
