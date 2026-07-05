@@ -120,8 +120,10 @@ class ParticipantCreate(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     ndis_id: Optional[str] = None
+    address: Optional[str] = None
     emergency_contact: str
     medical_alerts: Optional[str] = None
+    medical_condition_tag: Optional[str] = None
     avatar_url: Optional[str] = None
 
 class ParticipantResponse(BaseModel):
@@ -130,6 +132,7 @@ class ParticipantResponse(BaseModel):
     first_name: str
     last_name: str
     ndis_id: Optional[str] = None
+    address: Optional[str] = None
     emergency_contact: Optional[str] = None
     medical_alerts: Optional[str] = None
     avatar_url: Optional[str] = None
@@ -142,6 +145,8 @@ class ParticipantUpdate(BaseModel):
     first_name: Optional[str] = Field(None, max_length=100)
     last_name: Optional[str] = Field(None, max_length=100)
     ndis_id: Optional[str] = None
+    address: Optional[str] = None
     emergency_contact: Optional[str] = None
     medical_alerts: Optional[str] = None
+    medical_condition_tag: Optional[str] = None
     avatar_url: Optional[str] = None
