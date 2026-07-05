@@ -206,18 +206,19 @@ export default function RosteringPage() {
   };
 
   const handleDeleteShift = async (shiftId: string) => {
-    if (!window.confirm("Are you sure you want to cancel and delete this shift?")) return;
+    if (!window.confirm("Are you sure you want to cancel this shift?")) return;
     setDeletingId(shiftId);
     try {
       const token = await getAuthToken();
       const response = await fetch(`${BACKEND_URL}/shifts/${shiftId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' })
       });
-      if (!response.ok) throw new Error('Failed to delete shift');
+      if (!response.ok) throw new Error('Failed to cancel shift');
 
-      setShifts(prev => prev.filter(s => s.id !== shiftId));
-      toast.success('Shift cancelled successfully.');
+      setShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: 'cancelled' } : s));
+      toast.success('Shift cancelled.');
     } catch (error) {
       toast.error('Failed to cancel shift.');
     } finally {
@@ -338,7 +339,7 @@ export default function RosteringPage() {
                       onClick={() => handleDeleteShift(shift.id)}
                       disabled={deletingId === shift.id}
                       className={styles.deleteBtn}
-                      title="Cancel/Delete Shift"
+                      title="Cancel Shift"
                     >
                       {deletingId === shift.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                     </button>
