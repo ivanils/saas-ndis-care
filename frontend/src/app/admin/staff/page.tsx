@@ -94,14 +94,16 @@ export default function StaffPage() {
       const workers = (workersData || []) as WorkerProfile[];
       const workerIds = workers.map(w => w.id);
 
-      const { data: certsData, error: certsError } = await supabase
-        .from('worker_certifications')
-        .select('id, worker_id, type, expiration_date')
-        .in('worker_id', workerIds.length > 0 ? workerIds : ['uuid-placeholder']);
+      let certs: WorkerCert[] = [];
+      if (workerIds.length > 0) {
+        const { data: certsData, error: certsError } = await supabase
+          .from('worker_certifications')
+          .select('id, worker_id, type, expiration_date')
+          .in('worker_id', workerIds);
 
-      if (certsError) throw certsError;
-
-      const certs = (certsData || []) as WorkerCert[];
+        if (certsError) throw certsError;
+        certs = (certsData || []) as WorkerCert[];
+      }
       const today = new Date();
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(today.getDate() + 30);
