@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 # --- ENUMS (Mirroring Database Enums) ---
 class UserRole(str, Enum):
+    super_admin = 'super_admin'
     admin = 'admin'
     worker = 'worker'
 
@@ -109,7 +110,7 @@ class ProfileResponse(BaseModel):
 class ProfileUpdate(BaseModel):
     first_name: Optional[str] = Field(None, max_length=100)
     last_name: Optional[str] = Field(None, max_length=100)
-    role: Optional[str] = None
+    role: Optional[UserRole] = None
     avatar_url: Optional[str] = None
 
 
