@@ -134,7 +134,7 @@ export default function ParticipantsPage() {
       const { data: noteData, error: noteError } = await supabase
         .from('care_notes')
         .select('content, created_at')
-        .eq('shift_id', participant.id) // Fallback or matching index relationship if tied directly
+        .eq('participant_id', participant.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
