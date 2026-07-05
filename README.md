@@ -7,6 +7,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![CI](https://github.com/ivanils/saas-ndis-care/actions/workflows/ci.yml/badge.svg)
 
 > End-to-end care operations platform built for NDIS providers — from shift rostering and GPS-verified clock-ins to clinical documentation and compliance reporting.
 
@@ -47,6 +48,7 @@ Bellvi is a multi-tenant SaaS platform that consolidates everything into one sys
 - **Live GPS map** — real-time field worker positions via Leaflet
 - **Rostering engine** — create and assign shifts to workers with time validation
 - **Staff management** — onboard workers, manage profiles and certifications
+- **Participant management** — create, view, and edit participant profiles with full clinical data (NDIS ID, address, blood type, allergies, emergency contacts, mobility notes)
 - **Compliance dashboard** — shift audit trail, incident logs, approval workflow
 - **Real-time shift status overview** — approve, dispute, or escalate submissions
 
@@ -90,6 +92,7 @@ All clinical records use **soft deletes** (`deleted_at` timestamp) instead of ha
 | Approve / dispute shifts | — | ✓ | ✓ |
 | Create & assign shifts | — | ✓ | ✓ |
 | View participant profiles | ✓ | ✓ | ✓ |
+| Manage participants (CRUD) | — | ✓ | ✓ |
 | Create care notes | ✓ | ✓ | ✓ |
 | Staff management | — | ✓ | ✓ |
 | Compliance dashboard | — | ✓ | ✓ |
@@ -103,15 +106,16 @@ All clinical records use **soft deletes** (`deleted_at` timestamp) instead of ha
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 15 (App Router), React, TypeScript |
+| Frontend | Next.js 16.2.4 (App Router), React 19, TypeScript |
 | Styling | CSS Modules (SCSS), custom design system |
 | Backend | FastAPI (Python 3.x), Uvicorn, Pydantic v2 |
 | Database | PostgreSQL via Supabase |
 | Authentication | Supabase Auth — JWT + SSR cookies (`@supabase/ssr`) |
 | Maps | Leaflet + react-leaflet |
 | File storage | Supabase Storage |
-| Frontend Deployment | Vercel 
-| Backend Deployment | Render
+| CI | GitHub Actions (ESLint, tsc, ruff) |
+| Frontend Deployment | Vercel |
+| Backend Deployment | Render |
 ---
 
 ## Security
@@ -177,19 +181,22 @@ saas-ndis-care/
 │   └── src/
 │       ├── app/
 │       │   ├── (worker)/      # Worker portal — dashboard, shifts, participants, settings
-│       │   ├── admin/         # Admin portal — dashboard, rostering, staff, compliance
+│       │   ├── admin/         # Admin portal — dashboard, rostering, staff, participants, compliance
 │       │   ├── superadmin/    # Super admin portal
-│       │   ├── api/           # Next.js API routes (user management)
+│       │   ├── api/           # Next.js API routes (user management, certifications, assignments)
 │       │   ├── login/         # Auth page
 │       │   └── page.tsx       # Landing page
 │       ├── components/        # Shared components (sidebars, map, modals)
 │       ├── lib/               # Supabase client
 │       └── middleware.ts      # Route protection + RBAC redirects
-└── backend/                   # FastAPI application
-    ├── main.py
-    ├── schemas.py
-    ├── dependencies.py        # JWT validation + CurrentUser injection
-    └── routers/               # shifts, care_notes, participants, profiles, auth
+├── backend/                   # FastAPI application
+│   ├── main.py
+│   ├── schemas.py
+│   ├── dependencies.py        # JWT validation + CurrentUser injection
+│   └── routers/               # shifts, care_notes, participants, profiles, auth
+└── supabase/
+    ├── config.toml
+    └── migrations/            # Versioned SQL migrations (applied via supabase db push)
 ```
 
 ---
