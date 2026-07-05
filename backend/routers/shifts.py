@@ -1,4 +1,5 @@
 #backend/routers/shifts.py
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -115,7 +116,6 @@ def update_shift(shift_id: str, shift_data: schemas.ShiftUpdate, badge = Depends
 
             # Prevent starting a shift that has already ended
             if update_dict["status"] == "in_progress":
-                from datetime import datetime, timedelta, timezone
                 current = supabase_admin.table("shifts") \
                     .select("start_time, end_time") \
                     .eq("id", shift_id) \
@@ -131,6 +131,22 @@ def update_shift(shift_id: str, shift_data: schemas.ShiftUpdate, badge = Depends
                         cutoff = datetime.fromisoformat(start_time_str) + timedelta(hours=2)
                     if now > cutoff:
                         raise HTTPException(status_code=400, detail="Cannot start a shift that has already passed.")
+
+                # Reject if the worker already has another shift in progress
+                conflict = supabase_admin.table("shifts") \
+                    .select("id, start_time") \
+                    .eq("worker_id", str(badge.id)) \
+                    .eq("status", "in_progress") \
+                    .neq("id", shift_id) \
+                    .is_("deleted_at", "null") \
+                    .execute()
+                if conflict.data:
+                    blocking_start = datetime.fromisoformat(conflict.data[0]["start_time"])
+                    formatted = blocking_start.strftime("%d %b %Y at %H:%M")
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"You already have an active shift in progress (started {formatted}). Clock out before starting a new one."
+                    )
 
         # 3. Build the secure query scoped to the user's agency
         query = supabase_admin.table("shifts").update(update_dict).eq("id", shift_id).eq("agency_id", str(badge.agency_id))
