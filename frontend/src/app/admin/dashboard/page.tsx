@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation'; // <-- 1. Import useRouter
 import { supabase } from '@/lib/supabase';
@@ -131,7 +132,7 @@ export default function AdminDashboardPage() {
       const name = worker.profiles ? `${worker.profiles.first_name} ${worker.profiles.last_name}` : 'Worker';
       setSelectedLocation({ lat: worker.clock_in_lat, lng: worker.clock_in_lng, name });
     } else {
-      alert("This worker hasn't provided GPS coordinates yet.");
+      toast.error("This worker hasn't provided GPS coordinates yet.");
     }
   };
 
