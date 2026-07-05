@@ -1,9 +1,11 @@
 # backend/routers/care_notes.py
-from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
-from database import supabase_admin
+
+from fastapi import APIRouter, Depends, HTTPException, status
+
 import schemas
-from dependencies import get_current_user, CurrentUser
+from database import supabase_admin
+from dependencies import CurrentUser, get_current_user
 
 router = APIRouter(
     prefix="/care-notes",

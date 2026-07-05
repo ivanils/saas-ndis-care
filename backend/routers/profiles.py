@@ -1,9 +1,11 @@
 # backend/routers/profiles.py
-from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
-from database import supabase_admin
+
+from fastapi import APIRouter, Depends, HTTPException, status
+
 import schemas
-from dependencies import get_current_user, CurrentUser
+from database import supabase_admin
+from dependencies import CurrentUser, get_current_user
 
 router = APIRouter(
     prefix="/profiles",
@@ -23,12 +25,12 @@ def get_team_members(badge: CurrentUser = Depends(get_current_user)):
             .eq("agency_id", str(badge.agency_id)) \
             .order("first_name") \
             .execute()
-            
+
         return response.data
-        
+
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to fetch team members: {str(e)}"
         )
 
@@ -44,20 +46,20 @@ def get_profile(profile_id: str, badge: CurrentUser = Depends(get_current_user))
             .eq("id", profile_id) \
             .eq("agency_id", str(badge.agency_id)) \
             .execute()
-            
+
         if not response.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, 
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Profile not found or access denied."
             )
-            
+
         return response.data[0]
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to fetch profile: {str(e)}"
         )
 
@@ -70,7 +72,7 @@ def update_profile(profile_id: str, profile_data: schemas.ProfileUpdate, badge: 
     try:
         # 1. Clean the data: exclude fields the user didn't send
         update_dict = {k: v for k, v in profile_data.model_dump(exclude_unset=True).items() if v is not None}
-        
+
         if not update_dict:
              raise HTTPException(status_code=400, detail="No fields provided for update.")
 
@@ -84,16 +86,16 @@ def update_profile(profile_id: str, profile_data: schemas.ProfileUpdate, badge: 
             .eq("id", profile_id) \
             .eq("agency_id", str(badge.agency_id)) \
             .execute()
-            
+
         if not response.data:
             raise HTTPException(status_code=404, detail="Profile not found or access denied.")
-            
+
         return response.data[0]
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Failed to update profile: {str(e)}"
         )

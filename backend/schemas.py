@@ -1,9 +1,11 @@
 # backend/schemas.py
-from pydantic import BaseModel, Field
-from uuid import UUID
 from datetime import datetime
-from typing import Optional, List
 from enum import Enum
+from typing import List, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, Field
+
 
 # --- ENUMS (Mirroring Database Enums) ---
 class UserRole(str, Enum):
