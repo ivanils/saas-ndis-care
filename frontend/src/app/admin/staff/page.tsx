@@ -228,7 +228,7 @@ export default function StaffPage() {
       
       toast.success('Staff member deleted successfully.');
       setSelectedWorker(null);
-      fetchStaffData();
+      await fetchStaffData();
     } catch (error) {
       if (error instanceof Error) toast.error(error.message);
       else toast.error('Failed to delete staff member.');
@@ -249,7 +249,7 @@ export default function StaffPage() {
       if (!response.ok) throw new Error(result.error || 'Failed to add certification');
       toast.success("Certification added!");
       setNewCertDate(''); setIsAddingCert(false);
-      fetchStaffData(); setSelectedWorker(null);
+      await fetchStaffData(); setSelectedWorker(null);
     } catch (error) {
       if (error instanceof Error) toast.error(error.message);
       else toast.error("Failed to add certification.");
