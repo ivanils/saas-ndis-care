@@ -10,6 +10,27 @@ import styles from './page.module.scss';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
+const SHIFTS_SELECT = `
+  id,
+  participant_id,
+  start_time,
+  end_time,
+  status,
+  clock_in_lat,
+  clock_in_lng,
+  participants (first_name, last_name, avatar_url, address)
+`;
+
+async function fetchWorkerShifts(userId: string): Promise<Shift[]> {
+  const { data, error } = await supabase
+    .from('shifts')
+    .select(SHIFTS_SELECT)
+    .eq('worker_id', userId)
+    .order('start_time', { ascending: false });
+  if (error) throw error;
+  return (data as unknown as Shift[]) || [];
+}
+
 function getCoordinates(): Promise<{ latitude: number; longitude: number }> {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -75,42 +96,34 @@ export default function MyShiftsPage() {
   // --- DRAWER STATE ---
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+  // Used only by action handlers (Start Shift / Clock-Out) to silently
+  // refresh the shift list after a mutation. Does not manage loading state
+  // because the per-button shiftActionLoading already covers that UX.
   const fetchAllShifts = useCallback(async () => {
-    queueMicrotask(() => setLoading(true));
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setShifts([]);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('shifts')
-        .select(`
-          id,
-          participant_id,
-          start_time,
-          end_time,
-          status,
-          clock_in_lat,
-          clock_in_lng,
-          participants (first_name, last_name, avatar_url, address)
-        `)
-        .eq('worker_id', user.id)
-        .order('start_time', { ascending: false });
-
-      if (error) throw error;
-      setShifts((data as unknown as Shift[]) || []);
+      if (!user) { setShifts([]); return; }
+      setShifts(await fetchWorkerShifts(user.id));
     } catch (error) {
       console.error('Error fetching shifts:', error);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
+  // Initial mount fetch — inline async IIFE so the linter can verify that
+  // all setState calls are after await (not synchronous in the effect body).
   useEffect(() => {
-    fetchAllShifts();
-  }, [fetchAllShifts]);
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setShifts([]); return; }
+        setShifts(await fetchWorkerShifts(user.id));
+      } catch (error) {
+        console.error('Error fetching shifts:', error);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   // --- COMPREHENSIVE FILTERING LOGIC ---
   const getStatusMapping = (status: string) => {
