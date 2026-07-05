@@ -744,6 +744,17 @@
   }
 }
 
+.mapUnavailable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 /* Section 2: Quick Actions */
 .btnPrimaryFull {
   width: 100%;
