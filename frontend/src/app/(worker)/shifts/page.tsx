@@ -76,7 +76,7 @@ export default function MyShiftsPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const fetchAllShifts = useCallback(async () => {
-    setLoading(true);
+    queueMicrotask(() => setLoading(true));
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
