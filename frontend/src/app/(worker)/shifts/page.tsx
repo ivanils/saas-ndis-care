@@ -76,9 +76,13 @@ export default function MyShiftsPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const fetchAllShifts = useCallback(async () => {
+    setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setShifts([]);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('shifts')
@@ -99,11 +103,13 @@ export default function MyShiftsPage() {
       setShifts((data as unknown as Shift[]) || []);
     } catch (error) {
       console.error('Error fetching shifts:', error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchAllShifts().finally(() => setLoading(false));
+    fetchAllShifts();
   }, [fetchAllShifts]);
 
   // --- COMPREHENSIVE FILTERING LOGIC ---
