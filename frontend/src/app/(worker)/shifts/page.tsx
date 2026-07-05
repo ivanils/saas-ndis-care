@@ -7,8 +7,15 @@ import { supabase } from '@/lib/supabase';
 import { Loader2, Search, X, Clock, MapPin, FileText, User, CalendarX2, PlayCircle, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import styles from './page.module.scss';
 
+interface PreviousCareNote {
+  content: string;
+  created_at: string;
+  worker: { first_name: string; last_name: string } | null;
+}
+
 interface Shift {
   id: string;
+  participant_id: string;
   start_time: string;
   end_time: string;
   status: string;
@@ -38,6 +45,9 @@ export default function MyShiftsPage() {
   const [modalType, setModalType] = useState<'details' | 'careNote' | null>(null);
   const [careNoteContent, setCareNoteContent] = useState<string | null>(null);
   const [loadingNote, setLoadingNote] = useState(false);
+  const [previousCareNote, setPreviousCareNote] = useState<PreviousCareNote | null>(null);
+  const [previousNoteLoaded, setPreviousNoteLoaded] = useState(false);
+  const [loadingPreviousNote, setLoadingPreviousNote] = useState(false);
   // --- ALERT MODAL STATE ---
   const [featureAlert, setFeatureAlert] = useState<string | null>(null);
 
@@ -54,10 +64,11 @@ export default function MyShiftsPage() {
         const { data, error } = await supabase
           .from('shifts')
           .select(`
-            id, 
-            start_time, 
-            end_time, 
-            status, 
+            id,
+            participant_id,
+            start_time,
+            end_time,
+            status,
             participants (first_name, last_name, avatar_url)
           `)
           .eq('worker_id', user.id)
@@ -134,9 +145,33 @@ export default function MyShiftsPage() {
   };
 
   // --- MODAL & DRAWER ACTION HANDLERS ---
+  const fetchPreviousCareNote = async (participantId: string, currentShiftId: string) => {
+    setLoadingPreviousNote(true);
+    setPreviousCareNote(null);
+    setPreviousNoteLoaded(false);
+    try {
+      const { data, error } = await supabase
+        .from('care_notes')
+        .select('content, created_at, worker:profiles!worker_id(first_name, last_name)')
+        .eq('participant_id', participantId)
+        .or(`shift_id.is.null,shift_id.neq.${currentShiftId}`)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      setPreviousCareNote(data as PreviousCareNote | null);
+    } catch (err) {
+      console.error('Error fetching previous care note:', err);
+    } finally {
+      setLoadingPreviousNote(false);
+      setPreviousNoteLoaded(true);
+    }
+  };
+
   const handleViewDetails = (shift: Shift) => {
     setSelectedShift(shift);
     setModalType('details');
+    fetchPreviousCareNote(shift.participant_id, shift.id);
   };
 
   const handleViewCareNote = async (shift: Shift) => {
@@ -501,6 +536,17 @@ export default function MyShiftsPage() {
             {/* BODY */}
             <div className={styles.clientBody}>
 
+              {modalType === 'careNote' ? (
+                <div className={styles.sectionBlock}>
+                  <h3 className={styles.sectionTitle}>Full Care Note</h3>
+                  {loadingNote ? (
+                    <Loader2 className="animate-spin" size={20} style={{ display: 'block', margin: '24px auto' }} />
+                  ) : (
+                    <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', color: 'var(--text-dark)' }}>{careNoteContent}</p>
+                  )}
+                </div>
+              ) : <>
+
               {/* SECTION 1: Shift Info */}
               <div className={styles.sectionBlock}>
                 <h3 className={styles.sectionTitle}>Section 1: Shift Info</h3>
@@ -568,12 +614,36 @@ export default function MyShiftsPage() {
                 <h3 className={styles.sectionTitle}>Section 3: Clinical Context</h3>
                 <div className={styles.contextSubtitle}>Previous Care Note Summary</div>
                 <div className={styles.contextBox}>
-                  {selectedShift.participants?.first_name} was in good spirits during the last visit.
-                  Remember to check his blood pressure before starting the mobility exercises.
-                  <span className={styles.contextAuthor}>Written by Jane Doe on Oct 24</span>
+                  {!previousNoteLoaded || loadingPreviousNote ? (
+                    <Loader2 className="animate-spin" size={16} style={{ display: 'block', margin: '8px auto' }} />
+                  ) : previousCareNote ? (
+                    <>
+                      {previousCareNote.content.length > 150
+                        ? previousCareNote.content.slice(0, 150) + '…'
+                        : previousCareNote.content}
+                      {previousCareNote.content.length > 150 && (
+                        <button
+                          style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '0 4px', fontSize: 'inherit' }}
+                          onClick={() => { setCareNoteContent(previousCareNote.content); setModalType('careNote'); }}
+                        >
+                          Ver más
+                        </button>
+                      )}
+                      <span className={styles.contextAuthor}>
+                        Written by {previousCareNote.worker
+                          ? `${previousCareNote.worker.first_name} ${previousCareNote.worker.last_name}`
+                          : 'Unknown'} on {new Date(previousCareNote.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                      No previous care notes for this participant.
+                    </span>
+                  )}
                 </div>
               </div>
 
+              </>}
             </div>
 
           </div>
