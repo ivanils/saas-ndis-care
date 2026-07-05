@@ -18,7 +18,7 @@ const SHIFTS_SELECT = `
   status,
   clock_in_lat,
   clock_in_lng,
-  participants (first_name, last_name, avatar_url)
+  participants (first_name, last_name, avatar_url, address)
 `;
 
 async function fetchWorkerShifts(userId: string): Promise<Shift[]> {
@@ -63,6 +63,7 @@ interface Shift {
     first_name: string;
     last_name: string;
     avatar_url?: string;
+    address?: string | null;
   } | null;
 }
 
@@ -671,14 +672,24 @@ export default function MyShiftsPage() {
                     <div className={styles.dateSubtext}>Date & Time</div>
                     <div className={styles.locationRow}>
                       <MapPin size={16} color="var(--text-muted)" />
-                      <span>No address on file</span>
+                      <span>{selectedShift.participants?.address || 'No address on file'}</span>
                     </div>
                   </div>
                   <div className={styles.shiftInfoMap}>
-                    <div className={styles.mapUnavailable}>
-                      <MapPin size={24} color="var(--text-muted)" />
-                      <span>Map unavailable — no address on file</span>
-                    </div>
+                    {selectedShift.participants?.address ? (
+                      <iframe
+                        title="Participant Location"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(selectedShift.participants.address)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      ></iframe>
+                    ) : (
+                      <div className={styles.mapUnavailable}>
+                        <MapPin size={24} color="var(--text-muted)" />
+                        <span>Map unavailable — no address on file</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
