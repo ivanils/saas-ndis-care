@@ -563,7 +563,7 @@ export default function MyShiftsPage() {
                     <div className={styles.dateSubtext}>Date & Time</div>
                     <div className={styles.locationRow}>
                       <MapPin size={16} color="var(--text-muted)" />
-                      <span>{selectedShift.participants?.address || '270 Queen St, Brisbane'}</span>
+                      <span>{selectedShift.participants?.address || 'No address on file'}</span>
                     </div>
                   </div>
                   <div className={styles.shiftInfoMap}>

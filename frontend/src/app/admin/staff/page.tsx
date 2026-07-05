@@ -94,14 +94,16 @@ export default function StaffPage() {
       const workers = (workersData || []) as WorkerProfile[];
       const workerIds = workers.map(w => w.id);
 
-      const { data: certsData, error: certsError } = await supabase
-        .from('worker_certifications')
-        .select('id, worker_id, type, expiration_date')
-        .in('worker_id', workerIds.length > 0 ? workerIds : ['uuid-placeholder']);
+      let certs: WorkerCert[] = [];
+      if (workerIds.length > 0) {
+        const { data: certsData, error: certsError } = await supabase
+          .from('worker_certifications')
+          .select('id, worker_id, type, expiration_date')
+          .in('worker_id', workerIds);
 
-      if (certsError) throw certsError;
-
-      const certs = (certsData || []) as WorkerCert[];
+        if (certsError) throw certsError;
+        certs = (certsData || []) as WorkerCert[];
+      }
       const today = new Date();
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(today.getDate() + 30);
@@ -226,7 +228,7 @@ export default function StaffPage() {
       
       toast.success('Staff member deleted successfully.');
       setSelectedWorker(null);
-      fetchStaffData();
+      await fetchStaffData();
     } catch (error) {
       if (error instanceof Error) toast.error(error.message);
       else toast.error('Failed to delete staff member.');
@@ -247,7 +249,7 @@ export default function StaffPage() {
       if (!response.ok) throw new Error(result.error || 'Failed to add certification');
       toast.success("Certification added!");
       setNewCertDate(''); setIsAddingCert(false);
-      fetchStaffData(); setSelectedWorker(null);
+      await fetchStaffData(); setSelectedWorker(null);
     } catch (error) {
       if (error instanceof Error) toast.error(error.message);
       else toast.error("Failed to add certification.");

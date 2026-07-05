@@ -10,7 +10,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://saas-ndis-care-ivanils-projects.vercel.app",
         "https://bellvi.ivanllanos.com",
     ],
     allow_credentials=True,

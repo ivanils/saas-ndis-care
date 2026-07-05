@@ -4,7 +4,7 @@ from enum import Enum
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 # --- ENUMS (Mirroring Database Enums) ---
@@ -85,14 +85,14 @@ class CareNoteResponse(BaseModel):
 
 # AUTH SCHEMAS
 class UserRegister(BaseModel):
-    email: str
+    email: EmailStr
     password: str
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     agency_name: str = Field(..., min_length=1, max_length=200)
 
 class UserLogin(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 # PROFILES SCHEMAS
