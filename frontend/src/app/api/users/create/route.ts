@@ -76,6 +76,19 @@ export async function POST(request: Request) {
       throw profileError;
     }
 
+    // Write agency_id and role into app_metadata so the FastAPI backend
+    // can read them from the JWT without a DB round-trip (see dependencies.py).
+    const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(
+      authData.user.id,
+      { app_metadata: { agency_id: agencyId, role: role } }
+    );
+
+    if (metaError) {
+      // Non-fatal but serious: the user exists and can log in, but cannot
+      // use any FastAPI endpoint. Log and surface as a warning.
+      console.error('[create user] Failed to set app_metadata:', metaError.message);
+    }
+
     return NextResponse.json({ success: true, user: authData.user });
   } catch (error) {
     if (error instanceof Error) {
