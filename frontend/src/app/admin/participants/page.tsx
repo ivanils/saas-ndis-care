@@ -34,6 +34,15 @@ async function getAuthToken(): Promise<string> {
   return session.access_token;
 }
 
+async function loadParticipants(): Promise<Participant[]> {
+  const token = await getAuthToken();
+  const res = await fetch(`${BACKEND_URL}/participants/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Failed to fetch participants');
+  return res.json();
+}
+
 export default function ParticipantsPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,26 +62,30 @@ export default function ParticipantsPage() {
   const [medicalAlerts, setMedicalAlerts] = useState('');
   const [conditionTag, setConditionTag] = useState<ConditionTag>('general');
 
+  // Used only by mutation handlers to silently refresh the list after create/edit.
   const fetchParticipants = useCallback(async () => {
     try {
-      const token = await getAuthToken();
-      const res = await fetch(`${BACKEND_URL}/participants/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('Failed to fetch participants');
-      const data: Participant[] = await res.json();
-      setParticipants(data);
+      setParticipants(await loadParticipants());
     } catch (err) {
       console.error(err);
       toast.error('Failed to load participants.');
-    } finally {
-      setLoading(false);
     }
   }, []);
 
+  // Initial mount fetch — inline IIFE so the linter can verify all setState
+  // calls are after await (not synchronous in the effect body).
   useEffect(() => {
-    fetchParticipants();
-  }, [fetchParticipants]);
+    (async () => {
+      try {
+        setParticipants(await loadParticipants());
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to load participants.');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const openCreateModal = () => {
     setEditingParticipant(null);
