@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Users, ShieldAlert, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Users, UserCheck, ShieldAlert, Settings, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import styles from './AdminSidebar.module.scss';
 
@@ -27,6 +27,11 @@ export default function AdminSidebar() {
       name: 'Staff',
       path: '/admin/staff',
       icon: <Users size={20} />,
+    },
+    {
+      name: 'Participants',
+      path: '/admin/participants',
+      icon: <UserCheck size={20} />,
     },
     {
       name: 'Compliance',
